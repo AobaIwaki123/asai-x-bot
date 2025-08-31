@@ -35,6 +35,10 @@
 - Discord Webhook URL
 - Cursor IDE（開発環境として推奨）
 
+## API制限について
+
+⚠️ **重要**: X API v2の制限により、**15分間に1回**のリクエストのみ許可されています。そのため、ボットは15分間隔での実行を推奨します。
+
 ## インストール
 
 ### 方法1: 自動セットアップ（推奨）
@@ -127,14 +131,14 @@ cd src && python run.py
 
 #### conda環境使用の場合
 ```bash
-# 5分ごとに実行
-*/5 * * * * cd /path/to/asai-x-bot && /opt/homebrew/Caskroom/miniconda/base/envs/asai/bin/python src/run.py >> logs/bot.log 2>&1
+# 15分ごとに実行（API制限に準拠）
+*/15 * * * * cd /path/to/asai-x-bot && /opt/homebrew/Caskroom/miniconda/base/envs/asai/bin/python src/run.py >> logs/bot.log 2>&1
 ```
 
 #### システムPython使用の場合
 ```bash
-# 5分ごとに実行
-*/5 * * * * cd /path/to/asai-x-bot && python src/run.py >> logs/bot.log 2>&1
+# 15分ごとに実行（API制限に準拠）
+*/15 * * * * cd /path/to/asai-x-bot && python src/run.py >> logs/bot.log 2>&1
 ```
 
 ### バックグラウンド実行
