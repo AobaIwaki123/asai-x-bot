@@ -29,20 +29,48 @@
 
 ## 必要環境
 
-- Python 3.12以上
+- Python 3.12以上（conda環境推奨）
+- Miniconda/Anaconda（conda環境使用の場合）
 - X API Bearer Token
 - Discord Webhook URL
+- Cursor IDE（開発環境として推奨）
 
 ## インストール
 
-1. リポジトリをクローン
+### 方法1: 自動セットアップ（推奨）
+
 ```bash
+# リポジトリをクローン
 git clone <repository-url>
 cd asai-x-bot
+
+# conda環境を自動セットアップ
+./setup_conda.sh
 ```
 
-2. 依存関係をインストール
+### 方法2: 手動セットアップ
+
 ```bash
+# リポジトリをクローン
+git clone <repository-url>
+cd asai-x-bot
+
+# conda環境を作成・有効化
+conda create -n asai python=3.12 -y
+conda activate asai
+
+# 依存関係をインストール
+pip install -r requirements.txt
+```
+
+### 方法3: システムPython使用
+
+```bash
+# リポジトリをクローン
+git clone <repository-url>
+cd asai-x-bot
+
+# 依存関係をインストール
 pip install -r requirements.txt
 ```
 
@@ -70,15 +98,43 @@ QUERY=(#浅井恋乃未) (from:sakurazaka46 OR from:sakura_joqr OR from:anan_mag
 
 ### 基本的な実行
 
+#### conda環境使用の場合（推奨）
 ```bash
-python src/asai-rader.py
+# conda環境を有効化
+conda activate asai
+
+# ボットを実行
+cd src && python run.py
 ```
+
+#### システムPython使用の場合
+```bash
+cd src && python run.py
+```
+
+### Cursor IDEでの実行
+
+1. Cursor で Python インタープリターを設定：
+   - `Cmd+Shift+P` → "Python: Select Interpreter"
+   - conda環境 `asai` のPythonパスを選択
+
+2. デバッグ実行：
+   - `F5` キーを押して "Python: ASAI Bot" を選択
+
+詳細な開発環境設定は [CURSOR_SETUP.md](CURSOR_SETUP.md) を参照してください。
 
 ### 定期実行（cron使用例）
 
+#### conda環境使用の場合
 ```bash
 # 5分ごとに実行
-*/5 * * * * cd /path/to/asai-x-bot && python src/asai-rader.py
+*/5 * * * * cd /path/to/asai-x-bot && /opt/homebrew/Caskroom/miniconda/base/envs/asai/bin/python src/run.py >> logs/bot.log 2>&1
+```
+
+#### システムPython使用の場合
+```bash
+# 5分ごとに実行
+*/5 * * * * cd /path/to/asai-x-bot && python src/run.py >> logs/bot.log 2>&1
 ```
 
 ### バックグラウンド実行
