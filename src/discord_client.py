@@ -1,9 +1,9 @@
 import html
 import logging
 
-import requests
+import requests  # type: ignore
 
-from config import WEBHOOK_URL
+from config import WEBHOOK_URL  # type: ignore
 
 logger = logging.getLogger(__name__)
 

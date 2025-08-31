@@ -1,6 +1,6 @@
 import logging
 
-from config import STATE_FILE
+from config import STATE_FILE  # type: ignore
 
 logger = logging.getLogger(__name__)
 

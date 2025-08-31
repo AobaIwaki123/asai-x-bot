@@ -3,9 +3,9 @@ import logging
 import time
 from urllib.parse import urlencode
 
-import requests
+import requests  # type: ignore
 
-from config import (
+from config import (  # type: ignore
     SEARCH_URL,
     get_x_api_headers,
     get_x_api_params,
