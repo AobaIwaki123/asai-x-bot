@@ -1,2 +1,4 @@
 .env
 since_id.txt
+*.backup
+__pycache__
