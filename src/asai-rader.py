@@ -1,3 +1,4 @@
+import datetime
 import html
 import logging
 import os
@@ -171,13 +172,69 @@ def fetch_and_forward():
 
     try:
         res = requests.get(url, headers=HEADERS, timeout=30)
-        if res.status_code == 429:
-            # レート制限時は少し間隔を開ける（運用側でリトライポリシーを）
-            logger.warning(
-                "レート制限に達しました。60秒待機します"
+
+        # HTTPレスポンスコードとヘッダーの詳細ログ
+        logger.info(
+            f"X API レスポンスコード: {res.status_code}"
+        )
+
+        # レート制限関連のヘッダーをログ出力
+        rate_limit_limit = res.headers.get(
+            "x-rate-limit-limit"
+        )
+        rate_limit_remaining = res.headers.get(
+            "x-rate-limit-remaining"
+        )
+        rate_limit_reset = res.headers.get(
+            "x-rate-limit-reset"
+        )
+
+        if rate_limit_limit:
+            logger.info(
+                f"レート制限上限: {rate_limit_limit}"
             )
+        if rate_limit_remaining:
+            logger.info(
+                f"残りリクエスト数: {rate_limit_remaining}"
+            )
+        if rate_limit_reset:
+            utc_time = datetime.datetime.fromtimestamp(
+                int(rate_limit_reset),
+                tz=datetime.timezone.utc,
+            )
+            jst_time = utc_time.astimezone(
+                datetime.timezone(
+                    datetime.timedelta(hours=9)
+                )
+            )
+            logger.info(
+                f"レート制限リセット時刻: JST {jst_time.strftime('%Y-%m-%d %H:%M:%S')} "
+            )
+
+        if res.status_code == 429:
+            # レート制限時は詳細なエラー情報をログ出力
+            logger.warning(
+                "レート制限に達しました (HTTP 429)"
+            )
+            try:
+                error_payload = res.json()
+                if "errors" in error_payload:
+                    for error in error_payload["errors"]:
+                        error_code = error.get("code")
+                        error_message = error.get("message")
+                        logger.warning(
+                            f"エラー詳細 - コード: {error_code}, "
+                            f"メッセージ: {error_message}"
+                        )
+            except Exception as parse_error:
+                logger.warning(
+                    f"エラーレスポンスの解析に失敗: {parse_error}"
+                )
+
+            logger.info("60秒待機してリトライします")
             time.sleep(60)
             return
+
         res.raise_for_status()
         payload = res.json()
         logger.info("X APIからのレスポンス取得成功")
