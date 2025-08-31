@@ -140,7 +140,7 @@ cd src && python run.py
 ### バックグラウンド実行
 
 ```bash
-nohup python src/asai-rader.py > bot.log 2>&1 &
+nohup python src/asai-radar.py > bot.log 2>&1 &
 ```
 
 ## ファイル構成
@@ -153,7 +153,7 @@ asai-x-bot/
 ├── since_id.txt          # 最後に処理した投稿ID（自動生成）
 └── src/
     ├── __init__.py
-    └── asai-rader.py     # メインスクリプト
+    └── asai-radar.py     # メインスクリプト
 ```
 
 ## 動作の仕組み

@@ -150,7 +150,7 @@ asai-x-bot/
     ├── main.py           # メイン処理
     ├── run.py            # エントリーポイント
     ├── README.md         # ソースコード説明
-    └── asai-rader.py.backup # 元ファイルのバックアップ
+    └── asai-radar.py.backup # 元ファイルのバックアップ
 ```
 
 ## 開発時のTips
