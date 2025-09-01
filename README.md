@@ -12,6 +12,49 @@
 - 重複投稿の防止（since_id管理）
 - ログ出力による動作状況の可視化
 
+## システム動作フロー
+
+以下は、Cloud SchedulerからDiscordへの投稿転送までの実行シーケンスです：
+
+```mermaid
+sequenceDiagram
+    participant CS as Cloud Scheduler
+    participant CR as Cloud Run<br/>(asai-x-bot)
+    participant SM as Secret Manager
+    participant XA as X API
+    participant XS as since_id.txt<br/>(X API状態管理)
+    participant DC as Discord
+
+    Note over CS: 15分ごとに実行<br/>("*/15 * * * *")
+    
+    CS->>CR: HTTP POST リクエスト<br/>(OIDC認証)
+    
+    Note over CR: server.py が受信
+    CR->>SM: シークレット取得<br/>(X_BEARER_TOKEN,<br/>DISCORD_WEBHOOK_URL)
+    SM-->>CR: 認証情報
+    
+    Note over CR: main.py 実行開始
+    
+    CR->>XS: 前回取得済みID読み込み<br/>(/tmp/data/since_id.txt)
+    XS-->>CR: since_id値
+    
+    CR->>XA: ツイート取得<br/>(since_id指定)<br/>クエリ: #浅井恋乃未<br/>from:sakurazaka46 等
+    XA-->>CR: 新着ツイートデータ<br/>(JSON形式)
+    
+    Note over CR: データ処理<br/>- ユーザー情報索引作成<br/>- メディア情報索引作成<br/>- 古い順にソート
+    
+    loop 各ツイートについて
+        CR->>CR: Embed形式に変換
+        CR->>DC: Discord Webhook<br/>でツイート投稿
+        DC-->>CR: 投稿完了
+    end
+    
+    CR->>XS: 最新ツイートID保存<br/>(次回のsince_id用)
+    Note over XS: X API重複防止<br/>状態を更新
+    
+    CR-->>CS: HTTP 200 OK<br/>{"status": "success"}
+```
+
 ## 監視対象
 
 以下のクエリで投稿を監視します：
@@ -168,6 +211,74 @@ asai-x-bot/
 4. **重複チェック**: 既に処理済みの投稿はスキップ
 5. **Discord転送**: 新しい投稿をDiscord Webhookで転送
 6. **状態更新**: 処理した投稿IDを保存
+
+## システムアーキテクチャ
+
+以下は、Google Cloud Platform上での全体的なシステム構成です：
+
+```mermaid
+graph TD
+    subgraph "Google Cloud Platform"
+        CS["Cloud Scheduler<br/>Job: asai-x-bot-schedule<br/>Cron: */15 * * * *<br/>Timezone: Asia/Tokyo"]
+        
+        subgraph "Cloud Run Service"
+            CR["asai-x-bot<br/>Memory: 512Mi<br/>CPU: 1<br/>Timeout: 900s<br/>Concurrency: 1"]
+            
+            subgraph "Container"
+                SV["server.py<br/>(HTTP Server)<br/>Port: 8080"]
+                MN["main.py<br/>(Bot Logic)"]
+                CF["config.py<br/>(Validation)"]
+                XC["x_api_client.py<br/>(X API Client)"]
+                DC_CLIENT["discord_client.py<br/>(Discord Client)"]
+                UT["utils.py<br/>(Utilities)"]
+            end
+        end
+        
+        SM["Secret Manager<br/>- asai-x-bot-x-bearer-token<br/>- asai-x-bot-discord-webhook"]
+        
+        SA1["Service Account<br/>project-compute@<br/>(Cloud Run Default)<br/>Role: secretmanager.secretAccessor"]
+        
+        SA2["Service Account<br/>asai-x-bot-scheduler@<br/>(Scheduler)<br/>Role: run.invoker"]
+    end
+    
+    subgraph "External Services"
+        subgraph "X (Twitter) API"
+            XA["X API Endpoint<br/>Bearer Token Auth"]
+            XS["/tmp/data/since_id.txt<br/>(Last Tweet ID Storage)<br/>X API 状態管理"]
+        end
+        DW["Discord Webhook<br/>Channel Notification"]
+    end
+    
+    CS -->|"HTTP POST<br/>OIDC Auth"| SV
+    SV --> MN
+    MN --> CF
+    MN --> XC
+    MN --> DC_CLIENT
+    MN --> UT
+    
+    CR -->|"Access Secrets"| SM
+    SM -->|"Provides Tokens"| CR
+    
+    XC -->|"Bearer Token<br/>API Request<br/>(since_id parameter)"| XA
+    XA -->|"Tweet Data<br/>(JSON)"| XC
+    
+    XC -.->|"Read Last ID<br/>Write New Max ID"| XS
+    XS -.->|"Prevents Duplicate<br/>Tweet Processing"| XC
+    
+    DC_CLIENT -->|"Webhook POST<br/>Embed Data"| DW
+    
+    SA1 -.->|"IAM Binding"| SM
+    SA2 -.->|"IAM Binding"| CR
+    CS -.->|"Uses"| SA2
+    CR -.->|"Uses"| SA1
+    
+    style CS fill:#4285f4,stroke:#1a73e8,color:#fff
+    style CR fill:#34a853,stroke:#137333,color:#fff
+    style SM fill:#fbbc04,stroke:#ea8600,color:#000
+    style XA fill:#1da1f2,stroke:#0d8bd9,color:#fff
+    style XS fill:#1da1f2,stroke:#0d8bd9,color:#fff
+    style DW fill:#7289da,stroke:#5865f2,color:#fff
+```
 
 ## Cloud Run デプロイメント
 
