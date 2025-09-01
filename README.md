@@ -168,3 +168,119 @@ asai-x-bot/
 4. **重複チェック**: 既に処理済みの投稿はスキップ
 5. **Discord転送**: 新しい投稿をDiscord Webhookで転送
 6. **状態更新**: 処理した投稿IDを保存
+
+## Cloud Run デプロイメント
+
+### 自動デプロイ（推奨）
+
+Google Cloud Runで定期実行するための自動デプロイスクリプトを提供しています：
+
+```bash
+# 1. Google Cloud CLIがインストールされていることを確認
+gcloud version
+
+# 2. 認証とプロジェクト設定
+gcloud auth login
+export PROJECT_ID="your-gcp-project-id"
+export REGION="asia-northeast1"  # オプション（デフォルト値）
+
+# 3. 自動デプロイ実行
+./deploy-cloud-run.sh
+```
+
+デプロイスクリプトは以下を自動で実行します：
+
+1. 必要なGoogle Cloud APIの有効化
+2. Dockerイメージのビルドとプッシュ
+3. Secret Manager でのAPIキー管理
+4. Cloud Runサービスのデプロイ
+5. Cloud Schedulerによる15分間隔の定期実行設定
+
+### 手動デプロイ
+
+#### 1. Dockerイメージの準備
+
+```bash
+# イメージのビルド
+docker build -t gcr.io/PROJECT_ID/asai-x-bot .
+
+# Google Container Registryにプッシュ
+docker push gcr.io/PROJECT_ID/asai-x-bot
+```
+
+#### 2. シークレットの作成
+
+```bash
+# X API Bearer Token
+echo "your-x-bearer-token" | gcloud secrets create asai-x-bot-x-bearer-token --data-file=-
+
+# Discord Webhook URL
+echo "your-discord-webhook-url" | gcloud secrets create asai-x-bot-discord-webhook --data-file=-
+```
+
+#### 3. Cloud Runサービスのデプロイ
+
+```bash
+gcloud run deploy asai-x-bot \
+    --image gcr.io/PROJECT_ID/asai-x-bot \
+    --platform managed \
+    --region asia-northeast1 \
+    --no-allow-unauthenticated \
+    --memory 512Mi \
+    --cpu 1 \
+    --timeout 900 \
+    --concurrency 1 \
+    --max-instances 1 \
+    --set-env-vars "QUERY=(#浅井恋乃未) (from:sakurazaka46 OR from:sakura_joqr OR from:anan_mag OR from:Lemino_official)" \
+    --set-secrets "X_BEARER_TOKEN=asai-x-bot-x-bearer-token:latest" \
+    --set-secrets "DISCORD_WEBHOOK_URL=asai-x-bot-discord-webhook:latest"
+```
+
+#### 4. Cloud Schedulerの設定
+
+```bash
+# Service Accountの作成
+gcloud iam service-accounts create asai-x-bot-scheduler
+
+# Cloud Run Invoker権限の付与
+gcloud run services add-iam-policy-binding asai-x-bot \
+    --member="serviceAccount:asai-x-bot-scheduler@PROJECT_ID.iam.gserviceaccount.com" \
+    --role="roles/run.invoker" \
+    --region=asia-northeast1
+
+# 15分間隔のスケジューラージョブ作成
+gcloud scheduler jobs create http asai-x-bot-schedule \
+    --location=asia-northeast1 \
+    --schedule="*/15 * * * *" \
+    --time-zone="Asia/Tokyo" \
+    --uri="CLOUD_RUN_URL" \
+    --http-method=POST \
+    --oidc-service-account-email=asai-x-bot-scheduler@PROJECT_ID.iam.gserviceaccount.com
+```
+
+### 設定ファイル
+
+- `Dockerfile`: Cloud Run用のコンテナ設定
+- `cloud-run-service.yaml`: Cloud Runサービス設定
+- `cloud-scheduler.yaml`: Cloud Scheduler設定
+- `deploy-cloud-run.sh`: 自動デプロイスクリプト
+
+### 監視とログ
+
+```bash
+# ログの確認
+gcloud logging read 'resource.type=cloud_run_revision AND resource.labels.service_name=asai-x-bot' --limit=50
+
+# Schedulerジョブの確認
+gcloud scheduler jobs list --location=asia-northeast1
+
+# 手動実行
+gcloud scheduler jobs run asai-x-bot-schedule --location=asia-northeast1
+```
+
+### 費用について
+
+- Cloud Run: 実行時間とリクエスト数に基づく従量課金
+- Cloud Scheduler: 月1000ジョブまで無料
+- Secret Manager: シークレット数とアクセス回数に基づく
+- 15分間隔の実行であれば、月額費用は数百円程度

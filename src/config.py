@@ -38,7 +38,7 @@ def validate_env_vars():
 
 
 # 設定値
-STATE_FILE = "since_id.txt"
+STATE_FILE = os.getenv("SINCE_ID_FILE", "since_id.txt")
 SEARCH_URL = "https://api.x.com/2/tweets/search/recent"
 
 
