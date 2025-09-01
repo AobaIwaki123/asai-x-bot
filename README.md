@@ -277,10 +277,3 @@ gcloud scheduler jobs list --location=asia-northeast1
 # 手動実行
 gcloud scheduler jobs run asai-x-bot-schedule --location=asia-northeast1
 ```
-
-### 費用について
-
-- Cloud Run: 実行時間とリクエスト数に基づく従量課金
-- Cloud Scheduler: 月1000ジョブまで無料
-- Secret Manager: シークレット数とアクセス回数に基づく
-- 15分間隔の実行であれば、月額費用は数百円程度
