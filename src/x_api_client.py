@@ -3,7 +3,7 @@ import logging
 import time
 from urllib.parse import urlencode
 
-import requests  # type: ignore
+import requests
 
 from .config import (
     SEARCH_URL,
