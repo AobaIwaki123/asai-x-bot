@@ -2,3 +2,4 @@
 since_id.txt
 *.backup
 __pycache__
+.coverage
