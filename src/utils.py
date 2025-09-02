@@ -1,8 +1,10 @@
 import logging
 import os
 
+from google.api_core import (  # type: ignore
+    exceptions as gcp_exceptions,
+)
 from google.cloud import secretmanager  # type: ignore
-from google.api_core import exceptions as gcp_exceptions  # type: ignore
 
 from config import (  # type: ignore
     PROJECT_ID,
