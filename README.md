@@ -1,6 +1,6 @@
 # 浅井恋乃未 X Bot
 
-[![CI](https://github.com/AobaIwaki123/asai-x-bot/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/AobaIwaki123/asai-x-bot/actions/workflows/ci.yml)
+[![CI](https://github.com/AobaIwaki123/asai-x-bot/actions/workflows/ci.yml/badge.svg)](https://github.com/AobaIwaki123/asai-x-bot/actions/workflows/ci.yml)
 
 ## 概要
 
