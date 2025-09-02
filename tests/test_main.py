@@ -13,7 +13,7 @@ class TestMain:
 
     @patch("src.main.save_since_id")
     @patch("src.main.discord_post")
-    @patch("src.main.to_embed")
+    @patch("src.main.get_tweet_url")
     @patch("src.main.build_index")
     @patch("src.main.fetch_tweets")
     @patch("src.main.load_since_id")
@@ -22,7 +22,7 @@ class TestMain:
         mock_load_since_id,
         mock_fetch_tweets,
         mock_build_index,
-        mock_to_embed,
+        mock_get_tweet_url,
         mock_discord_post,
         mock_save_since_id,
     ):
@@ -39,22 +39,18 @@ class TestMain:
                     {"id": "user1", "username": "testuser1"},
                     {"id": "user2", "username": "testuser2"},
                 ],
-                "media": [],
             },
         }
-        mock_build_index.side_effect = [
-            {"user1": {"username": "testuser1"}, "user2": {"username": "testuser2"}},
-            {},
-        ]
-        mock_to_embed.return_value = {"title": "Test embed"}
+        mock_build_index.return_value = {"user1": {"username": "testuser1"}, "user2": {"username": "testuser2"}}
+        mock_get_tweet_url.return_value = "https://x.com/testuser/status/123"
 
         fetch_and_forward()
 
         # 各関数が適切に呼ばれることを確認
         mock_load_since_id.assert_called_once()
         mock_fetch_tweets.assert_called_once_with("123")
-        assert mock_build_index.call_count == 2
-        assert mock_to_embed.call_count == 2
+        mock_build_index.assert_called_once()
+        assert mock_get_tweet_url.call_count == 2
         assert mock_discord_post.call_count == 2
         mock_save_since_id.assert_called_once_with("125")
 
@@ -88,12 +84,18 @@ class TestMain:
 
     @patch("src.main.save_since_id")
     @patch("src.main.discord_post")
-    @patch("src.main.to_embed")
+    @patch("src.main.get_tweet_url")
     @patch("src.main.build_index")
     @patch("src.main.fetch_tweets")
     @patch("src.main.load_since_id")
     def test_fetch_and_forward_tweet_sorting(
-        self, mock_load_since_id, mock_fetch_tweets, mock_build_index, mock_to_embed, mock_discord_post, mock_save_since_id
+        self,
+        mock_load_since_id,
+        mock_fetch_tweets,
+        mock_build_index,
+        mock_get_tweet_url,
+        mock_discord_post,
+        mock_save_since_id,
     ):
         """ツイートがID順でソートされることのテスト"""
         # IDが逆順のツイート
@@ -110,19 +112,19 @@ class TestMain:
                     {"id": "user2", "username": "testuser2"},
                     {"id": "user3", "username": "testuser3"},
                 ],
-                "media": [],
             },
         }
-        mock_build_index.side_effect = [
-            {"user1": {"username": "testuser1"}, "user2": {"username": "testuser2"}, "user3": {"username": "testuser3"}},
-            {},
-        ]
-        mock_to_embed.return_value = {"title": "Test embed"}
+        mock_build_index.return_value = {
+            "user1": {"username": "testuser1"},
+            "user2": {"username": "testuser2"},
+            "user3": {"username": "testuser3"},
+        }
+        mock_get_tweet_url.return_value = "https://x.com/testuser/status/123"
 
         fetch_and_forward()
 
-        # to_embedが呼ばれた順序を確認（ID順になっているはず）
-        calls = mock_to_embed.call_args_list
+        # get_tweet_urlが呼ばれた順序を確認（ID順になっているはず）
+        calls = mock_get_tweet_url.call_args_list
         assert len(calls) == 3
         assert calls[0][0][0]["id"] == "122"  # 最初に処理されるべき
         assert calls[1][0][0]["id"] == "124"  # 2番目

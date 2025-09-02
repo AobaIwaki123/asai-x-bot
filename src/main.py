@@ -2,7 +2,7 @@ import logging
 import sys
 
 from config import validate_env_vars
-from discord_client import discord_post, to_embed
+from discord_client import discord_post, get_tweet_url
 from utils import build_index, load_since_id, save_since_id
 from x_api_client import fetch_tweets
 
@@ -23,7 +23,6 @@ def fetch_and_forward():
     tweets = payload.get("data", [])
     includes = payload.get("includes", {})
     users_idx = build_index(includes.get("users", []))
-    media_idx = build_index(includes.get("media", []), key="media_key")
 
     if not tweets:
         logger.info("新しいツイートはありません")
@@ -31,7 +30,6 @@ def fetch_and_forward():
 
     logger.info(f"取得したツイート数: {len(tweets)}")
     logger.info(f"取得したユーザー数: {len(includes.get('users', []))}")
-    logger.info(f"取得したメディア数: {len(includes.get('media', []))}")
 
     # 古い順に送る（Discordの読みやすさ配慮）
     tweets_sorted = sorted(tweets, key=lambda t: t["id"])
@@ -41,8 +39,8 @@ def fetch_and_forward():
         user = users_idx.get(tw["author_id"], {})
         username = user.get("username", "unknown")
         logger.info(f"ツイート {i}/{len(tweets_sorted)} を処理中: @{username}")
-        embed = to_embed(tw, users_idx, media_idx)
-        discord_post(embed=embed)
+        tweet_url = get_tweet_url(tw, users_idx)
+        discord_post(content=tweet_url)
 
     # 次回用に最大IDを保存
     max_id = max(t["id"] for t in tweets_sorted)
