@@ -1,7 +1,7 @@
 import html
 import logging
-
 from typing import cast
+
 import requests
 
 from .config import WEBHOOK_URL
