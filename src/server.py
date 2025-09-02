@@ -48,7 +48,7 @@ class BotHandler(BaseHTTPRequestHandler):
 def run_server():
     """HTTPサーバーを起動"""
     port = int(os.environ.get("PORT", 8080))
-    host = "0.0.0.0"  # Cloud Runではこれが重要
+    host = "0.0.0.0"  # Cloud Runではこれが重要  # nosec B104
 
     logger.info(f"サーバーを {host}:{port} で起動")
     server = HTTPServer((host, port), BotHandler)
