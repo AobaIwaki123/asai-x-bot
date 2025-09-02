@@ -2,6 +2,7 @@ import logging
 import os
 
 from google.cloud import secretmanager  # type: ignore
+from google.api_core import exceptions as gcp_exceptions  # type: ignore
 
 from config import (  # type: ignore
     PROJECT_ID,
@@ -63,7 +64,7 @@ def _save_since_id_to_secret_manager(since_id: str):
             client.get_secret(
                 request={"name": _get_secret_path()}
             )
-        except Exception:
+        except gcp_exceptions.NotFound:
             logger.info(
                 f"Secret Manager にシークレット {secret_id} を作成中..."
             )
