@@ -2,14 +2,31 @@
   "cSpell.words": [
     "anan",
     "ASAI",
+    "bandit",
+    "cloudbuild",
+    "cloudscheduler",
+    "codecov",
+    "conda",
+    "datetime",
+    "discord",
     "doseq",
     "dotenv",
+    "gcloud",
     "joqr",
     "Lemino",
     "levelname",
+    "mypy",
     "nohup",
+    "noqa",
+    "pyproject",
+    "pytest",
+    "ruff",
     "sakura",
-    "sakurazaka"
+    "sakurazaka",
+    "secretmanager",
+    "toml",
+    "urlencode",
+    "webhook"
   ],
   // Python 設定
   "python.defaultInterpreterPath": "python3.12",
@@ -24,18 +41,12 @@
   },
   // Ruff 拡張設定
   "ruff.enable": true,
-  "ruff.format.enable": true,
   "ruff.lint.enable": true,
   "ruff.organizeImports": true,
   "ruff.fixAll": true,
   // Ruff設定ファイルを明示的に指定
   "ruff.configurationPreference": "filesystemFirst",
   "ruff.importStrategy": "fromEnvironment",
-  // 他のフォーマッターを無効化
-  "python.formatting.provider": "none",
-  "isort.check": false,
-  "black-formatter.enable": false,
-  "flake8.enable": false,
   // エディター設定
   "editor.rulers": [
     127
