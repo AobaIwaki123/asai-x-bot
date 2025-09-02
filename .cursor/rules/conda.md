@@ -21,7 +21,7 @@ echo "Current environment: $CONDA_DEFAULT_ENV"
 1. **Environment Check**: Always verify `asai` environment is active
 2. **Dependencies**: Use `pip install -r requirements.txt` within asai environment
 3. **Testing**: Run `pytest` with coverage: `pytest tests/ --cov=src --cov-report=term-missing`
-4. **Linting**: Use `ruff check src tests` and `mypy src`
+4. **Linting**: Use `ruff check src tests` and `mypy src --ignore-missing-imports`
 5. **Formatting**: Use `ruff format src/ tests/`
 
 ### Makefile Integration
@@ -51,19 +51,4 @@ echo "Current environment: $CONDA_DEFAULT_ENV"
 ### Code Quality Standards
 - Line length: 127 characters (configured in pyproject.toml)
 - Python version: 3.12
-- Type checking: mypy with relaxed settings
-- Security scanning: bandit for security issues
-- Testing: pytest with coverage reporting
-
-### File Structure Awareness
-- Source code: `src/` directory
-- Tests: `tests/` directory
-- Configuration: `pyproject.toml`, `requirements.txt`
-- Environment setup: `setup_conda.sh`
-- Documentation: `README.md`, `CURSOR_SETUP.md`
-
-## General Guidelines
-- Always prioritize environment consistency
-- Provide clear, actionable error messages
-- Reference the appropriate documentation files when needed
-- Consider both development and deployment contexts
+- Type checking: mypy with
