@@ -27,7 +27,7 @@ sequenceDiagram
     participant XS as Secret Manager<br/>(since_id永続化)
     participant DC as Discord
 
-    Note over CS: 15分ごとに実行<br/>("*/15 * * * *")
+    Note over CS: 1日1回実行<br/>("0 9 * * *")
 
     CS->>CR: HTTP POST リクエスト<br/>(OIDC認証)
 
@@ -81,9 +81,9 @@ sequenceDiagram
 - Google Cloud Project（Secret Manager使用時）
 - Cursor IDE（開発環境として推奨）
 
-## API制限について
+## 実行頻度について
 
-⚠️ **重要**: X API v2の制限により、**15分間に1回**のリクエストのみ許可されています。そのため、ボットは15分間隔での実行を推奨します。
+✅ **設定**: このボットは**1日1回（午前9時）**の実行に設定されています。必要に応じて頻度を調整できます。
 
 ## インストール
 
@@ -180,14 +180,14 @@ cd src && python run.py
 
 #### conda環境使用の場合
 ```bash
-# 15分ごとに実行（API制限に準拠）
-*/15 * * * * cd /path/to/asai-x-bot && /opt/homebrew/Caskroom/miniconda/base/envs/asai/bin/python src/run.py >> logs/bot.log 2>&1
+# 1日1回実行（午前9時）
+0 9 * * * cd /path/to/asai-x-bot && /opt/homebrew/Caskroom/miniconda/base/envs/asai/bin/python src/run.py >> logs/bot.log 2>&1
 ```
 
 #### システムPython使用の場合
 ```bash
-# 15分ごとに実行（API制限に準拠）
-*/15 * * * * cd /path/to/asai-x-bot && python src/run.py >> logs/bot.log 2>&1
+# 1日1回実行（午前9時）
+0 9 * * * cd /path/to/asai-x-bot && python src/run.py >> logs/bot.log 2>&1
 ```
 
 ### バックグラウンド実行
@@ -233,7 +233,7 @@ asai-x-bot/
 ```mermaid
 graph TD
     subgraph "Google Cloud Platform"
-        CS["Cloud Scheduler<br/>Job: asai-x-bot-schedule<br/>Cron: */15 * * * *<br/>Timezone: Asia/Tokyo"]
+        CS["Cloud Scheduler<br/>Job: asai-x-bot-schedule<br/>Cron: 0 9 * * *<br/>Timezone: Asia/Tokyo"]
 
         subgraph "Cloud Run Service"
             CR["asai-x-bot<br/>Memory: 512Mi<br/>CPU: 1<br/>Timeout: 900s<br/>Concurrency: 1"]
@@ -328,7 +328,7 @@ export REGION="asia-northeast1"  # オプション（デフォルト値）
    - DISCORD_WEBHOOK_URL
    - since_id 永続化
 4. Cloud Runサービスのデプロイ
-5. Cloud Schedulerによる15分間隔の定期実行設定
+5. Cloud Schedulerによる1日1回の定期実行設定
 
 ### 手動デプロイ
 
@@ -386,10 +386,10 @@ gcloud run services add-iam-policy-binding asai-x-bot \
     --role="roles/run.invoker" \
     --region=asia-northeast1
 
-# 15分間隔のスケジューラージョブ作成
+# 1日1回のスケジューラージョブ作成（午前9時）
 gcloud scheduler jobs create http asai-x-bot-schedule \
     --location=asia-northeast1 \
-    --schedule="*/15 * * * *" \
+    --schedule="0 9 * * *" \
     --time-zone="Asia/Tokyo" \
     --uri="CLOUD_RUN_URL" \
     --http-method=POST \
