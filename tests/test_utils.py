@@ -3,9 +3,11 @@ import sys
 import tempfile
 from unittest.mock import MagicMock, patch
 
-sys.path.append("src")
+# Add src to path before importing
+if "src" not in sys.path:
+    sys.path.append("src")
 
-from src.utils import (
+from src.utils import (  # noqa: E402
     _load_since_id_from_file,
     _load_since_id_from_secret_manager,
     _save_since_id_to_file,
@@ -23,14 +25,23 @@ class TestUtils:
         """デフォルトキーでのインデックス構築テスト"""
         data = [{"id": "1", "name": "item1"}, {"id": "2", "name": "item2"}]
         result = build_index(data)
-        expected = {"1": {"id": "1", "name": "item1"}, "2": {"id": "2", "name": "item2"}}
+        expected = {
+            "1": {"id": "1", "name": "item1"},
+            "2": {"id": "2", "name": "item2"},
+        }
         assert result == expected
 
     def test_build_index_with_custom_key(self):
         """カスタムキーでのインデックス構築テスト"""
-        data = [{"media_key": "key1", "url": "url1"}, {"media_key": "key2", "url": "url2"}]
+        data = [
+            {"media_key": "key1", "url": "url1"},
+            {"media_key": "key2", "url": "url2"},
+        ]
         result = build_index(data, key="media_key")
-        expected = {"key1": {"media_key": "key1", "url": "url1"}, "key2": {"media_key": "key2", "url": "url2"}}
+        expected = {
+            "key1": {"media_key": "key1", "url": "url1"},
+            "key2": {"media_key": "key2", "url": "url2"},
+        }
         assert result == expected
 
     def test_build_index_empty_list(self):
@@ -100,7 +111,10 @@ class TestUtils:
         mock_response.payload.data.decode.return_value = "secret_id_123"
         mock_client.access_secret_version.return_value = mock_response
 
-        with patch("src.utils.PROJECT_ID", "test-project"), patch("src.utils.SINCE_ID_SECRET_NAME", "test-secret"):
+        with (
+            patch("src.utils.PROJECT_ID", "test-project"),
+            patch("src.utils.SINCE_ID_SECRET_NAME", "test-secret"),
+        ):
             result = _load_since_id_from_secret_manager()
             assert result == "secret_id_123"
 
@@ -111,7 +125,10 @@ class TestUtils:
         mock_client_class.return_value = mock_client
         mock_client.access_secret_version.side_effect = Exception("API Error")
 
-        with patch("src.utils.PROJECT_ID", "test-project"), patch("src.utils.SINCE_ID_SECRET_NAME", "test-secret"):
+        with (
+            patch("src.utils.PROJECT_ID", "test-project"),
+            patch("src.utils.SINCE_ID_SECRET_NAME", "test-secret"),
+        ):
             result = _load_since_id_from_secret_manager()
             assert result is None
 
@@ -130,7 +147,10 @@ class TestUtils:
         mock_response.name = "projects/test-project/secrets/test-secret/versions/1"
         mock_client.add_secret_version.return_value = mock_response
 
-        with patch("src.utils.PROJECT_ID", "test-project"), patch("src.utils.SINCE_ID_SECRET_NAME", "test-secret"):
+        with (
+            patch("src.utils.PROJECT_ID", "test-project"),
+            patch("src.utils.SINCE_ID_SECRET_NAME", "test-secret"),
+        ):
             _save_since_id_to_secret_manager("new_id_456")
 
             # シークレット作成が呼ばれることを確認
@@ -142,7 +162,10 @@ class TestUtils:
         with (
             patch("src.utils.PROJECT_ID", "test-project"),
             patch.dict(os.environ, {"K_SERVICE": "test-service"}),
-            patch("src.utils._load_since_id_from_secret_manager", return_value="cloud_id"),
+            patch(
+                "src.utils._load_since_id_from_secret_manager",
+                return_value="cloud_id",
+            ),
             patch("src.utils._load_since_id_from_file", return_value="file_id"),
         ):
             result = load_since_id()
@@ -150,7 +173,10 @@ class TestUtils:
 
     def test_load_since_id_local_environment(self):
         """ローカル環境でのsince_id読み込みテスト"""
-        with patch("src.utils.PROJECT_ID", None), patch("src.utils._load_since_id_from_file", return_value="file_id"):
+        with (
+            patch("src.utils.PROJECT_ID", None),
+            patch("src.utils._load_since_id_from_file", return_value="file_id"),
+        ):
             result = load_since_id()
             assert result == "file_id"
 
@@ -168,6 +194,9 @@ class TestUtils:
 
     def test_save_since_id_local_environment(self):
         """ローカル環境でのsince_id保存テスト"""
-        with patch("src.utils.PROJECT_ID", None), patch("src.utils._save_since_id_to_file") as mock_file_save:
+        with (
+            patch("src.utils.PROJECT_ID", None),
+            patch("src.utils._save_since_id_to_file") as mock_file_save,
+        ):
             save_since_id("test_id")
             mock_file_save.assert_called_once_with("test_id")

@@ -18,7 +18,13 @@ class TestMain:
     @patch("src.main.fetch_tweets")
     @patch("src.main.load_since_id")
     def test_fetch_and_forward_success(
-        self, mock_load_since_id, mock_fetch_tweets, mock_build_index, mock_to_embed, mock_discord_post, mock_save_since_id
+        self,
+        mock_load_since_id,
+        mock_fetch_tweets,
+        mock_build_index,
+        mock_to_embed,
+        mock_discord_post,
+        mock_save_since_id,
     ):
         """正常なツイート取得と転送のテスト"""
         # モックの設定
@@ -29,11 +35,17 @@ class TestMain:
                 {"id": "124", "author_id": "user2", "text": "Another tweet"},
             ],
             "includes": {
-                "users": [{"id": "user1", "username": "testuser1"}, {"id": "user2", "username": "testuser2"}],
+                "users": [
+                    {"id": "user1", "username": "testuser1"},
+                    {"id": "user2", "username": "testuser2"},
+                ],
                 "media": [],
             },
         }
-        mock_build_index.side_effect = [{"user1": {"username": "testuser1"}, "user2": {"username": "testuser2"}}, {}]
+        mock_build_index.side_effect = [
+            {"user1": {"username": "testuser1"}, "user2": {"username": "testuser2"}},
+            {},
+        ]
         mock_to_embed.return_value = {"title": "Test embed"}
 
         fetch_and_forward()

@@ -2,9 +2,15 @@ import os
 import sys
 from unittest.mock import patch
 
-sys.path.append("src")
+# Add src to path before importing
+if "src" not in sys.path:
+    sys.path.append("src")
 
-from src.config import get_x_api_headers, get_x_api_params, validate_env_vars
+from src.config import (  # noqa: E402
+    get_x_api_headers,
+    get_x_api_params,
+    validate_env_vars,
+)
 
 
 class TestConfig:
@@ -12,10 +18,12 @@ class TestConfig:
 
     def test_validate_env_vars_all_present(self):
         """すべての環境変数が設定されている場合のテスト"""
-        with patch.dict(
-            os.environ,
-            {"X_BEARER_TOKEN": "test_token", "DISCORD_WEBHOOK_URL": "https://discord.com/webhook", "QUERY": "test query"},
-        ):
+        env_vars = {
+            "X_BEARER_TOKEN": "test_token",
+            "DISCORD_WEBHOOK_URL": "https://discord.com/webhook",
+            "QUERY": "test query",
+        }
+        with patch.dict(os.environ, env_vars):
             # 環境変数を再読み込み
             with (
                 patch("src.config.X_BEARER_TOKEN", "test_token"),
