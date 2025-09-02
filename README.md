@@ -1,5 +1,7 @@
 # 浅井恋乃未 X Bot
 
+[![CI](https://github.com/iwakiaoiyou/asai-x-bot/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/iwakiaoiyou/asai-x-bot/actions/workflows/ci.yml)
+
 ## 概要
 
 `#浅井恋乃未`がついたポストをX（旧Twitter）から監視し、Discordに自動転送するPython製のbotです。
@@ -26,32 +28,32 @@ sequenceDiagram
     participant DC as Discord
 
     Note over CS: 15分ごとに実行<br/>("*/15 * * * *")
-    
+
     CS->>CR: HTTP POST リクエスト<br/>(OIDC認証)
-    
+
     Note over CR: server.py が受信
     CR->>SM: シークレット取得<br/>(X_BEARER_TOKEN,<br/>DISCORD_WEBHOOK_URL,<br/>since_id)
     SM-->>CR: 認証情報・状態データ
-    
+
     Note over CR: main.py 実行開始
-    
+
     CR->>XS: 前回取得済みID読み込み<br/>(Secret Manager)
     XS-->>CR: since_id値
-    
+
     CR->>XA: ツイート取得<br/>(since_id指定)<br/>クエリ: #浅井恋乃未<br/>from:sakurazaka46 等
     XA-->>CR: 新着ツイートデータ<br/>(JSON形式)
-    
+
     Note over CR: データ処理<br/>- ユーザー情報索引作成<br/>- メディア情報索引作成<br/>- 古い順にソート
-    
+
     loop 各ツイートについて
         CR->>CR: Embed形式に変換
         CR->>DC: Discord Webhook<br/>でツイート投稿
         DC-->>CR: 投稿完了
     end
-    
+
     CR->>XS: 最新ツイートID保存<br/>(Secret Manager)<br/>(次回のsince_id用)
     Note over XS: X API重複防止<br/>状態を永続化
-    
+
     CR-->>CS: HTTP 200 OK<br/>{"status": "success"}
 ```
 
@@ -232,10 +234,10 @@ asai-x-bot/
 graph TD
     subgraph "Google Cloud Platform"
         CS["Cloud Scheduler<br/>Job: asai-x-bot-schedule<br/>Cron: */15 * * * *<br/>Timezone: Asia/Tokyo"]
-        
+
         subgraph "Cloud Run Service"
             CR["asai-x-bot<br/>Memory: 512Mi<br/>CPU: 1<br/>Timeout: 900s<br/>Concurrency: 1"]
-            
+
             subgraph "Container"
                 SV["server.py<br/>(HTTP Server)<br/>Port: 8080"]
                 MN["main.py<br/>(Bot Logic)"]
@@ -245,51 +247,51 @@ graph TD
                 UT["utils.py<br/>(Utilities)"]
             end
         end
-        
+
         SM["Secret Manager<br/>- asai-x-bot-x-bearer-token<br/>- asai-x-bot-discord-webhook<br/>- asai-x-bot-since-id"]
-        
+
         SA1["Service Account<br/>project-compute@<br/>(Cloud Run Default)<br/>Role: secretmanager.secretAccessor"]
-        
+
         SA2["Service Account<br/>asai-x-bot-scheduler@<br/>(Scheduler)<br/>Role: run.invoker"]
     end
-    
+
     subgraph "External Services"
         subgraph "X (Twitter) API"
             XA["X API Endpoint<br/>Bearer Token Auth"]
         end
-        
+
         subgraph "State Management"
             XS["Local: /tmp/data/since_id.txt<br/>Cloud: Secret Manager<br/>(since_id 永続化)"]
         end
         DW["Discord Webhook<br/>Channel Notification"]
     end
-    
+
     CS -->|"HTTP POST<br/>OIDC Auth"| SV
     SV --> MN
     MN --> CF
     MN --> XC
     MN --> DC_CLIENT
     MN --> UT
-    
+
     CR -->|"Access Secrets"| SM
     SM -->|"Provides Tokens"| CR
-    
+
     XC -->|"Bearer Token<br/>API Request<br/>(since_id parameter)"| XA
     XA -->|"Tweet Data<br/>(JSON)"| XC
-    
+
     UT -->|"Read Last ID<br/>Write New Max ID"| XS
     XS -.->|"Prevents Duplicate<br/>Tweet Processing"| UT
     UT -.->|"State Management"| MN
-    
+
     SM -.->|"Cloud: since_id<br/>Persistent Storage"| XS
-    
+
     DC_CLIENT -->|"Webhook POST<br/>Embed Data"| DW
-    
+
     SA1 -.->|"IAM Binding"| SM
     SA2 -.->|"IAM Binding"| CR
     CS -.->|"Uses"| SA2
     CR -.->|"Uses"| SA1
-    
+
     style CS fill:#4285f4,stroke:#1a73e8,color:#fff
     style CR fill:#34a853,stroke:#137333,color:#fff
     style SM fill:#fbbc04,stroke:#ea8600,color:#000
