@@ -22,43 +22,30 @@ def fetch_and_forward():
     tweets = payload.get("data", [])
     includes = payload.get("includes", {})
     users_idx = build_index(includes.get("users", []))
-    media_idx = build_index(
-        includes.get("media", []), key="media_key"
-    )
+    media_idx = build_index(includes.get("media", []), key="media_key")
 
     if not tweets:
         logger.info("新しいツイートはありません")
         return
 
     logger.info(f"取得したツイート数: {len(tweets)}")
-    logger.info(
-        f"取得したユーザー数: {len(includes.get('users', []))}"
-    )
-    logger.info(
-        f"取得したメディア数: {len(includes.get('media', []))}"
-    )
+    logger.info(f"取得したユーザー数: {len(includes.get('users', []))}")
+    logger.info(f"取得したメディア数: {len(includes.get('media', []))}")
 
     # 古い順に送る（Discordの読みやすさ配慮）
     tweets_sorted = sorted(tweets, key=lambda t: t["id"])
     logger.info("ツイートをDiscordに転送中...")
 
     for i, tw in enumerate(tweets_sorted, 1):
-        username = users_idx.get(tw["author_id"], {}).get(
-            "username", "unknown"
-        )
-        logger.info(
-            f"ツイート {i}/{len(tweets_sorted)} を処理中: "
-            f"@{username}"
-        )
+        username = users_idx.get(tw["author_id"], {}).get("username", "unknown")
+        logger.info(f"ツイート {i}/{len(tweets_sorted)} を処理中: @{username}")
         embed = to_embed(tw, users_idx, media_idx)
         discord_post(embed=embed)
 
     # 次回用に最大IDを保存
     max_id = max(t["id"] for t in tweets_sorted)
     save_since_id(max_id)
-    logger.info(
-        f"処理完了。{len(tweets)}件のツイートを転送しました"
-    )
+    logger.info(f"処理完了。{len(tweets)}件のツイートを転送しました")
 
 
 def main():
