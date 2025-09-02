@@ -41,7 +41,7 @@ SEARCH_URL = "https://api.x.com/2/tweets/search/recent"
 
 # Secret Manager設定
 PROJECT_ID = os.getenv("GOOGLE_CLOUD_PROJECT", os.getenv("GCP_PROJECT"))
-SINCE_ID_SECRET_NAME = "asai-x-bot-since-id"
+SINCE_ID_SECRET_NAME = "asai-x-bot-since-id"  # nosec B105: Secret Manager resource name, not a credential
 
 
 # X API用のヘッダーとパラメータ
