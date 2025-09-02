@@ -1,3 +1,16 @@
 python-dotenv
 requests
 google-cloud-secret-manager
+
+# Development and testing dependencies
+pytest>=7.0.0
+pytest-mock>=3.10.0
+pytest-cov>=4.0.0
+responses>=0.23.0
+black>=23.0.0
+flake8>=6.0.0
+mypy>=1.0.0
+isort>=5.12.0
+bandit>=1.7.5
+safety>=2.3.0
+ruff>=0.4.0
