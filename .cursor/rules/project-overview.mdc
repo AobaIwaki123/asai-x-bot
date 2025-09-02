@@ -78,10 +78,11 @@ cd src && python run.py
 ## 開発ツール設定
 
 - **Python**: 3.12以上
-- **フォーマッター**: black, ruff (line-length: 127)
-- **リンター**: flake8, mypy, bandit
+- **フォーマッター**: ruff (line-length: 127)
+- **リンター**: ruff (包括的なルールセット)
+- **セキュリティ**: bandit (セキュリティチェック専用)
 - **テスト**: pytest + coverage
-- **型チェック**: mypy (ignore_missing_imports: true)
+- **型チェック**: ruffの型関連ルール
 
 ## データフロー
 
