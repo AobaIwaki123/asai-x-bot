@@ -13,7 +13,6 @@
   ],
   // Python 設定
   "python.defaultInterpreterPath": "./venv/bin/python",
-  
   // フォーマッター設定 - Ruffを使用
   "[python]": {
     "editor.defaultFormatter": "charliermarsh.ruff",
@@ -23,26 +22,24 @@
       "source.organizeImports.ruff": "explicit"
     }
   },
-  
   // Ruff 拡張設定
   "ruff.enable": true,
   "ruff.format.enable": true,
   "ruff.lint.enable": true,
   "ruff.organizeImports": true,
   "ruff.fixAll": true,
-  
   // Ruff設定ファイルを明示的に指定
   "ruff.configurationPreference": "filesystemFirst",
   "ruff.importStrategy": "fromEnvironment",
-  
   // 他のフォーマッターを無効化
   "python.formatting.provider": "none",
   "isort.check": false,
   "black-formatter.enable": false,
   "flake8.enable": false,
-  
   // エディター設定
-  "editor.rulers": [127],
+  "editor.rulers": [
+    127
+  ],
   "files.trimTrailingWhitespace": true,
   "files.insertFinalNewline": true,
   "files.trimFinalNewlines": true
