@@ -89,6 +89,15 @@ else
     echo -e "${GREEN}DISCORD_WEBHOOK_URL シークレットは既に存在します${NC}"
 fi
 
+# SINCE_ID シークレット（初期値は空文字）
+if ! gcloud secrets describe asai-x-bot-since-id >/dev/null 2>&1; then
+    echo -e "${YELLOW}SINCE_ID シークレットを作成中...${NC}"
+    echo "" | gcloud secrets create asai-x-bot-since-id --data-file=-
+    echo -e "${GREEN}SINCE_ID シークレットを作成しました（初期値は空）${NC}"
+else
+    echo -e "${GREEN}SINCE_ID シークレットは既に存在します${NC}"
+fi
+
 # 5.5. Cloud Runサービスアカウントの権限設定（プロジェクト番号を使用）
 echo -e "\n${YELLOW}5.5. Cloud Runサービスアカウントの権限設定...${NC}"
 PROJECT_NUMBER=$(gcloud projects describe $PROJECT_ID --format="value(projectNumber)")
@@ -114,6 +123,7 @@ gcloud run deploy $SERVICE_NAME \
     --max-instances 1 \
     --set-env-vars "QUERY=(#浅井恋乃未) (from:sakurazaka46 OR from:sakura_joqr OR from:anan_mag OR from:Lemino_official)" \
     --set-env-vars "SINCE_ID_FILE=/tmp/data/since_id.txt" \
+    --set-env-vars "GOOGLE_CLOUD_PROJECT=$PROJECT_ID" \
     --set-secrets "X_BEARER_TOKEN=asai-x-bot-x-bearer-token:latest" \
     --set-secrets "DISCORD_WEBHOOK_URL=asai-x-bot-discord-webhook:latest"
 

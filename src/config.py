@@ -41,6 +41,12 @@ def validate_env_vars():
 STATE_FILE = os.getenv("SINCE_ID_FILE", "since_id.txt")
 SEARCH_URL = "https://api.x.com/2/tweets/search/recent"
 
+# Secret Manager設定
+PROJECT_ID = os.getenv(
+    "GOOGLE_CLOUD_PROJECT", os.getenv("GCP_PROJECT")
+)
+SINCE_ID_SECRET_NAME = "asai-x-bot-since-id"
+
 
 # X API用のヘッダーとパラメータ
 def get_x_api_headers():
