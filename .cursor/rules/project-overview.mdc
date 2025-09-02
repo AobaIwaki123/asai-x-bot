@@ -1,0 +1,106 @@
+---
+alwaysApply: true
+description: "ASAI X Bot プロジェクトの基本情報とアーキテクチャ"
+---
+
+# ASAI X Bot - プロジェクト概要
+
+## プロジェクトの目的
+
+`#浅井恋乃未`がついたポストをX（旧Twitter）から監視し、Discordに自動転送するPython製のボットです。
+
+## アーキテクチャ概要
+
+### デプロイメント構成
+- **ローカル開発**: conda環境 `asai` + ファイルベース状態管理
+- **本番環境**: Google Cloud Run + Secret Manager + Cloud Scheduler
+- **実行頻度**: 1日1回（午前9時、`0 9 * * *`）
+
+### 監視対象
+```
+(#浅井恋乃未) (from:sakurazaka46 OR from:sakura_joqr OR from:anan_mag OR from:Lemino_official)
+```
+
+## ファイル構成
+
+### エントリーポイント
+- [src/run.py](mdc:src/run.py): 直接実行用スクリプト
+- [src/server.py](mdc:src/server.py): Cloud Run用HTTPサーバー (ポート8080)
+
+### コア機能
+- [src/main.py](mdc:src/main.py): メイン処理フローの制御
+- [src/config.py](mdc:src/config.py): 環境変数管理・検証・ログ設定
+- [src/x_api_client.py](mdc:src/x_api_client.py): X API クライアント
+- [src/discord_client.py](mdc:src/discord_client.py): Discord Webhook クライアント
+- [src/utils.py](mdc:src/utils.py): ユーティリティ（since_id管理、インデックス化）
+
+### 設定・デプロイ
+- [requirements.txt](mdc:requirements.txt): Python依存関係
+- [Dockerfile](mdc:Dockerfile): コンテナ設定
+- [setup_conda.sh](mdc:setup_conda.sh): 開発環境セットアップ
+- [deploy-cloud-run.sh](mdc:deploy-cloud-run.sh): 自動デプロイスクリプト
+
+## 重要な環境変数
+
+### 必須
+- `X_BEARER_TOKEN`: X API Bearer Token
+- `DISCORD_WEBHOOK_URL`: Discord Webhook URL
+- `QUERY`: 監視対象クエリ
+
+### オプション
+- `GOOGLE_CLOUD_PROJECT`: GCPプロジェクトID（Cloud Run時）
+- `SINCE_ID_FILE`: since_id保存ファイルパス（デフォルト: `since_id.txt`）
+- `PORT`: HTTPサーバーポート（デフォルト: 8080）
+
+## 状態管理の仕組み
+
+### since_id管理（重複防止）
+- **Cloud Run**: Secret Manager `asai-x-bot-since-id`
+- **ローカル**: ファイル `since_id.txt`
+- **フォールバック**: Secret Manager失敗時は自動的にローカルファイルを使用
+
+### 環境判定
+- Cloud Run環境: `K_SERVICE` 環境変数の存在で判定
+- フォールバック機構により同じコードで両環境に対応
+
+## 実行方法
+
+### ローカル開発
+```bash
+conda activate asai
+cd src && python run.py
+```
+
+### Cloud Run
+- Cloud Scheduler → HTTP POST → server.py → main.py
+- レスポンス: `{"status": "success"}` または `{"status": "error", "message": "..."}`
+
+## 開発ツール設定
+
+- **Python**: 3.12以上
+- **フォーマッター**: black, ruff (line-length: 127)
+- **リンター**: flake8, mypy, bandit
+- **テスト**: pytest + coverage
+- **型チェック**: mypy (ignore_missing_imports: true)
+
+## データフロー
+
+1. **初期化**: 環境変数読み込み・検証
+2. **状態取得**: Secret Manager または since_id.txt から前回ID取得
+3. **X API**: since_id指定でツイート検索
+4. **処理**: ユーザー・メディア情報のインデックス化
+5. **転送**: Discord Webhookで古い順に投稿
+6. **状態保存**: 最新ツイートIDを次回用に保存
+
+## セキュリティ考慮事項
+
+- APIキーはSecret Managerで管理
+- banditによるセキュリティスキャン
+- 認証情報をログに出力しない設計
+- Cloud Run認証でScheduler以外からのアクセス制限
+
+## 参考ドキュメント
+
+- メインREADME: [README.md](mdc:README.md)
+- ソースコード詳細: [src/README.md](mdc:src/README.md)
+- テストドキュメント: [TESTING.md](mdc:TESTING.md)
