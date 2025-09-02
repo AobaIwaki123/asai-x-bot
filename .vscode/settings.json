@@ -12,7 +12,7 @@
     "sakurazaka"
   ],
   // Python 設定
-  "python.defaultInterpreterPath": "./venv/bin/python",
+  "python.defaultInterpreterPath": "python3.12",
   // フォーマッター設定 - Ruffを使用
   "[python]": {
     "editor.defaultFormatter": "charliermarsh.ruff",
