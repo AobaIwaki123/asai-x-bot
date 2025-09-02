@@ -70,9 +70,9 @@ pytest tests/test_config.py::TestConfig::test_validate_env_vars_all_present -v
 
 ### リント
 ```bash
-# flake8でのコード品質チェック
+# ruffでのコード品質チェック
 make lint
-flake8 src tests
+ruff check src/ tests/
 
 # 型チェック
 make type-check
@@ -83,13 +83,13 @@ mypy src --ignore-missing-imports
 ```bash
 # コードフォーマット実行
 make format
-black src/ tests/
-isort src/ tests/
+ruff format src/ tests/
+ruff check --fix src/ tests/
 
 # フォーマットチェック（変更なし）
 make format-check
-black --check src/ tests/
-isort --check-only src/ tests/
+ruff format --check src/ tests/
+ruff check src/ tests/
 ```
 
 ### セキュリティチェック
@@ -105,12 +105,12 @@ safety check
 ### ワークフロー
 
 #### メインCI（`.github/workflows/ci.yml`）
-- **Python 3.9, 3.10, 3.11** でのマトリックステスト
-- リント（flake8）
+- **Python 3.12** でのテスト実行
+- リント（ruff）
 - 型チェック（mypy）
 - テスト実行（pytest + coverage）
 - セキュリティチェック（bandit, safety）
-- コードフォーマットチェック（black, isort）
+- コードフォーマットチェック（ruff）
 - Docker イメージビルドテスト
 - Codecov連携
 
