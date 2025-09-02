@@ -141,7 +141,7 @@ class TestDiscordClient:
             }
         }
 
-        media_idx = {}
+        media_idx: dict[str, dict] = {}
 
         result = to_embed(tweet, users_idx, media_idx)
 
@@ -213,8 +213,8 @@ class TestDiscordClient:
             },
         }
 
-        users_idx = {}
-        media_idx = {}
+        users_idx: dict[str, dict] = {}
+        media_idx: dict[str, dict] = {}
 
         result = to_embed(tweet, users_idx, media_idx)
 
@@ -248,7 +248,7 @@ class TestDiscordClient:
             }
         }
 
-        media_idx = {}
+        media_idx: dict[str, dict] = {}
 
         result = to_embed(tweet, users_idx, media_idx)
 
@@ -274,7 +274,7 @@ class TestDiscordClient:
             }
         }
 
-        media_idx = {}
+        media_idx: dict[str, dict] = {}
 
         result = to_embed(tweet, users_idx, media_idx)
 
