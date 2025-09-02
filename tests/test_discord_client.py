@@ -14,6 +14,13 @@ from src.discord_client import discord_post, to_embed
 class TestDiscordClient:
     """discord_clientモジュールのテスト"""
 
+    def _request_json(self, index: int = 0):
+        body = responses.calls[index].request.body
+        assert body is not None
+        if isinstance(body, bytes):
+            body = body.decode()
+        return json.loads(body)
+
     @responses.activate
     def test_discord_post_with_content(self):
         """コンテンツありでのDiscord投稿テスト"""
@@ -30,9 +37,7 @@ class TestDiscordClient:
             discord_post(content="Test message")
 
         assert len(responses.calls) == 1
-        assert json.loads(
-            responses.calls[0].request.body
-        ) == {"content": "Test message"}
+        assert self._request_json() == {"content": "Test message"}
 
     @responses.activate
     def test_discord_post_with_embed(self):
@@ -55,9 +60,7 @@ class TestDiscordClient:
             discord_post(embed=embed)
 
         assert len(responses.calls) == 1
-        assert json.loads(
-            responses.calls[0].request.body
-        ) == {"embeds": [embed]}
+        assert self._request_json() == {"embeds": [embed]}
 
     @responses.activate
     def test_discord_post_with_both(self):
@@ -74,18 +77,13 @@ class TestDiscordClient:
             "src.discord_client.WEBHOOK_URL",
             "https://discord.com/webhook",
         ):
-            discord_post(
-                content="Test message", embed=embed
-            )
+            discord_post(content="Test message", embed=embed)
 
         expected_payload = {
             "content": "Test message",
             "embeds": [embed],
         }
-        assert (
-            json.loads(responses.calls[0].request.body)
-            == expected_payload
-        )
+        assert self._request_json() == expected_payload
 
     @responses.activate
     def test_discord_post_http_error(self):
@@ -100,9 +98,7 @@ class TestDiscordClient:
             "src.discord_client.WEBHOOK_URL",
             "https://discord.com/webhook",
         ):
-            with pytest.raises(
-                requests.exceptions.HTTPError
-            ):
+            with pytest.raises(requests.exceptions.HTTPError):
                 discord_post(content="Test message")
 
     @responses.activate
@@ -169,9 +165,7 @@ class TestDiscordClient:
                 "like_count": 20,
                 "retweet_count": 8,
             },
-            "attachments": {
-                "media_keys": ["media1", "media2"]
-            },
+            "attachments": {"media_keys": ["media1", "media2"]},
         }
 
         users_idx = {
@@ -196,10 +190,7 @@ class TestDiscordClient:
 
         # 最初の画像が埋め込まれることを確認
         assert "image" in result
-        assert (
-            result["image"]["url"]
-            == "https://example.com/image1.jpg"
-        )
+        assert result["image"]["url"] == "https://example.com/image1.jpg"
 
     def test_to_embed_unknown_user(self):
         """不明なユーザーのツイート埋め込み変換テスト"""
@@ -220,16 +211,11 @@ class TestDiscordClient:
 
         assert result["title"] == "@unknown"
         assert result["author"]["name"] == "unknown"
-        assert (
-            result["url"]
-            == "https://x.com/unknown/status/123456789"
-        )
+        assert result["url"] == "https://x.com/unknown/status/123456789"
 
     def test_to_embed_long_text(self):
         """長いテキストのツイート埋め込み変換テスト"""
-        long_text = (
-            "A" * 5000
-        )  # 4000文字を超える長いテキスト
+        long_text = "A" * 5000  # 4000文字を超える長いテキスト
 
         tweet = {
             "id": "123456789",
@@ -279,7 +265,4 @@ class TestDiscordClient:
         result = to_embed(tweet, users_idx, media_idx)
 
         # HTMLエンティティがデコードされることを確認
-        assert (
-            result["description"]
-            == "Test & tweet with <html> entities"
-        )
+        assert result["description"] == "Test & tweet with <html> entities"
