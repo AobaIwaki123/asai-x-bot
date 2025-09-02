@@ -129,7 +129,7 @@ class TestXApiClient:
         ):
             result = fetch_tweets()
             assert result is None
-            mock_sleep.assert_called_once_with(60)
+            mock_sleep.assert_called_once_with(900)
 
     @responses.activate
     def test_fetch_tweets_http_error(self):

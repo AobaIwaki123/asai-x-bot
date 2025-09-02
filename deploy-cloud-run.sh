@@ -168,12 +168,12 @@ fi
 # 新しいジョブを作成
 gcloud scheduler jobs create http "$JOB_NAME" \
     --location="$REGION" \
-    --schedule="*/15 * * * *" \
+    --schedule="0 9 * * *" \
     --time-zone="Asia/Tokyo" \
     --uri="$SERVICE_URL" \
     --http-method=POST \
     --oidc-service-account-email="$SA_EMAIL" \
-    --description="ASAI X Bot - 15分ごとの定期実行"
+    --description="ASAI X Bot - 1日1回の定期実行"
 
 echo -e "${GREEN}Cloud Schedulerジョブを作成しました${NC}"
 
@@ -181,8 +181,8 @@ echo -e "${GREEN}Cloud Schedulerジョブを作成しました${NC}"
 echo -e "\n${GREEN}=== デプロイメント完了! ===${NC}"
 echo -e "${GREEN}Cloud Run URL: $SERVICE_URL${NC}"
 echo -e "${GREEN}Cloud Scheduler ジョブ: $JOB_NAME${NC}"
-echo -e "${GREEN}実行頻度: 15分ごと${NC}"
-echo -e "${GREEN}次回実行: 約15分後${NC}"
+echo -e "${GREEN}実行頻度: 1日1回（午前9時）${NC}"
+echo -e "${GREEN}次回実行: 翌日午前9時${NC}"
 
 echo -e "\n${YELLOW}=== 設定確認 ===${NC}"
 echo -e "${YELLOW}デプロイされたサービス:${NC}"

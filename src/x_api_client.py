@@ -49,8 +49,8 @@ def fetch_tweets(since_id=None):
             except Exception as parse_error:
                 logger.warning(f"エラーレスポンスの解析に失敗: {parse_error}")
 
-            logger.info("60秒待機してリトライします")
-            time.sleep(60)
+            logger.info("15分待機してリトライします")
+            time.sleep(900)
             return None
 
         res.raise_for_status()
