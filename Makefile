@@ -41,7 +41,6 @@ clean:  ## Clean up generated files
 	rm -rf htmlcov/
 	rm -rf .coverage
 	rm -rf .pytest_cache/
-	rm -rf .mypy_cache/
 
 ##@ All-in-one
 all: format lint security test  ## Run all checks and tests

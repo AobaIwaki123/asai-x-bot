@@ -106,7 +106,7 @@ safety check
 
 #### メインCI（`.github/workflows/ci.yml`）
 - **Python 3.12** でのテスト実行
-- リント（ruff） 
+- リント（ruff）
 - テスト実行（pytest + coverage）
 - セキュリティチェック（bandit, safety）
 - コードフォーマットチェック（ruff）
@@ -217,7 +217,6 @@ pytest tests/ --cov=src --cov-report=html
 ## 関連ファイル
 
 - `pytest.ini`: pytest設定
-- `pyproject.toml`: ツール設定（black, isort, mypy等）
-- `.flake8`: flake8設定
+- `pyproject.toml`: ツール設定（ruff, bandit等）
 - `Makefile`: 開発用コマンド
 - `requirements.txt`: テスト依存関係

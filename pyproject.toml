@@ -1,6 +1,4 @@
-# Ruffに統一したため、black、isort、mypyの設定は削除
-# mypyのみ型チェックのために残すかはプロジェクトの要件次第
-# 現在はruffでlintingとformattingを統一
+# Ruffで統一されたlinting/formatting設定
 
 [tool.bandit]
 exclude_dirs = ["tests"]
@@ -31,7 +29,6 @@ target-version = "py312"
 line-length = 127
 exclude = [
     ".git",
-    ".mypy_cache",
     ".pytest_cache",
     ".ruff_cache",
     "__pycache__",
@@ -45,19 +42,19 @@ select = [
     "E",   # pycodestyle errors
     "W",   # pycodestyle warnings
     "F",   # pyflakes
-    "I",   # isort
-    "B",   # flake8-bugbear
-    "C4",  # flake8-comprehensions
+    "I",   # import sorting
+    "B",   # bugbear
+    "C4",  # comprehensions
     "UP",  # pyupgrade
     "N",   # pep8-naming
-    "S",   # flake8-bandit (security)
-    "T20", # flake8-print
-    "PT",  # flake8-pytest-style
-    "Q",   # flake8-quotes
-    "RET", # flake8-return
-    "SIM", # flake8-simplify
-    "TID", # flake8-tidy-imports
-    "ARG", # flake8-unused-arguments
+    "S",   # bandit (security)
+    "T20", # print statements
+    "PT",  # pytest-style
+    "Q",   # quotes
+    "RET", # return statements
+    "SIM", # simplify
+    "TID", # tidy-imports
+    "ARG", # unused-arguments
     "ERA", # eradicate (commented code)
     "PL",  # pylint
     "TRY", # tryceratops

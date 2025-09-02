@@ -10,6 +10,3 @@ responses>=0.23.0
 ruff>=0.6.0
 bandit>=1.7.5
 safety>=2.3.0
-# 型チェックが必要な場合のみmypyを残す（オプション）
-# mypy>=1.0.0
-# types-requests>=2.32.0.20240712
