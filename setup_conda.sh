@@ -4,13 +4,25 @@
 
 echo "🚀 ASAI X Bot conda環境をセットアップしています..."
 
+# Anaconda Terms of Service acceptance (non-interactive)
+echo "📄 Anacondaの利用規約(TOS)を受諾しています..."
+if conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/main \
+    && conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/r; then
+    echo "✅ TOSの受諾が完了しました（または既に受諾済み）"
+else
+    echo "❌ TOSの受諾に失敗しました"
+    echo "   手動で以下を実行してください:"
+    echo "   conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/main"
+    echo "   conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/r"
+    exit 1
+fi
+
 # conda環境の存在確認
 if conda env list | grep -q "^asai "; then
     echo "✅ conda環境 'asai' は既に存在します"
 else
     echo "📦 conda環境 'asai' を作成しています..."
-    conda create -n asai python=3.12 -y
-    if [ $? -eq 0 ]; then
+    if conda create -n asai python=3.12 -y; then
         echo "✅ conda環境 'asai' を作成しました"
     else
         echo "❌ conda環境の作成に失敗しました"
@@ -20,14 +32,13 @@ fi
 
 # conda環境を有効化
 echo "🔄 conda環境 'asai' を有効化しています..."
-source $(conda info --base)/etc/profile.d/conda.sh
+# shellcheck source=/dev/null
+source "$(conda info --base)/etc/profile.d/conda.sh"
 conda activate asai
 
 # 依存関係をインストール
 echo "📥 依存関係をインストールしています..."
-pip install -r requirements.txt
-
-if [ $? -eq 0 ]; then
+if pip install -r requirements.txt; then
     echo "✅ 依存関係のインストールが完了しました"
 else
     echo "❌ 依存関係のインストールに失敗しました"

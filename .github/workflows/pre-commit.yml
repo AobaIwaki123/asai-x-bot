@@ -1,0 +1,33 @@
+name: Pre-commit checks
+
+on:
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  pre-commit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run quick linting
+        run: |
+          ruff check src tests
+
+      - name: Run quick tests
+        run: |
+          pytest tests/ --maxfail=5 -x
+
+      - name: Check code formatting
+        run: |
+          ruff format --check src/ tests/ || (echo "Code formatting check failed. Please run 'ruff format src/ tests/' to fix." && exit 1)

@@ -2,13 +2,57 @@
   "cSpell.words": [
     "anan",
     "ASAI",
+    "bandit",
+    "cloudbuild",
+    "cloudscheduler",
+    "codecov",
+    "conda",
+    "datetime",
+    "discord",
     "doseq",
     "dotenv",
+    "gcloud",
+    "isort",
     "joqr",
     "Lemino",
     "levelname",
+    "mypy",
     "nohup",
+    "noqa",
+    "pyproject",
+    "pytest",
+    "ruff",
     "sakura",
-    "sakurazaka"
-  ]
+    "sakurazaka",
+    "secretmanager",
+    "toml",
+    "urlencode",
+    "webhook"
+  ],
+  // Python 設定
+  "python.defaultInterpreterPath": "python3.12",
+  // フォーマッター設定 - Ruffを使用
+  "[python]": {
+    "editor.defaultFormatter": "charliermarsh.ruff",
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.fixAll.ruff": "explicit",
+      "source.organizeImports.ruff": "explicit"
+    }
+  },
+  // Ruff 拡張設定
+  "ruff.enable": true,
+  "ruff.lint.enable": true,
+  "ruff.organizeImports": true,
+  "ruff.fixAll": true,
+  // Ruff設定ファイルを明示的に指定
+  "ruff.configurationPreference": "filesystemFirst",
+  "ruff.importStrategy": "fromEnvironment",
+  // エディター設定
+  "editor.rulers": [
+    127
+  ],
+  "files.trimTrailingWhitespace": true,
+  "files.insertFinalNewline": true,
+  "files.trimFinalNewlines": true
 }

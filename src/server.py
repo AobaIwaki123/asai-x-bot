@@ -8,7 +8,7 @@ import logging
 import os
 from http.server import BaseHTTPRequestHandler, HTTPServer
 
-from main import main  # type: ignore
+from .main import main
 
 logger = logging.getLogger(__name__)
 
@@ -26,26 +26,19 @@ class BotHandler(BaseHTTPRequestHandler):
     def do_POST(self):
         """POST リクエストの処理 - ボットを実行"""
         try:
-            logger.info(
-                "Cloud Schedulerからのリクエストを受信"
-            )
+            logger.info("Cloud Schedulerからのリクエストを受信")
             main()
             self.send_response(200)
-            self.send_header(
-                "Content-type", "application/json"
-            )
+            self.send_header("Content-type", "application/json")
             self.end_headers()
             self.wfile.write(b'{"status": "success"}')
         except Exception as e:
             logger.error(f"ボット実行中にエラーが発生: {e}")
             self.send_response(500)
-            self.send_header(
-                "Content-type", "application/json"
-            )
+            self.send_header("Content-type", "application/json")
             self.end_headers()
-            self.wfile.write(
-                f'{{"status": "error", "message": "{str(e)}"}}'.encode()
-            )
+            error_response = f'{{"status": "error", "message": "{str(e)}"}}'
+            self.wfile.write(error_response.encode())
 
     def log_message(self, format, *args):
         """アクセスログを標準ログに統合"""

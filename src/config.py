@@ -27,9 +27,7 @@ def validate_env_vars():
         logger.error("X_BEARER_TOKEN が設定されていません")
         return False
     if not WEBHOOK_URL:
-        logger.error(
-            "DISCORD_WEBHOOK_URL が設定されていません"
-        )
+        logger.error("DISCORD_WEBHOOK_URL が設定されていません")
         return False
     if not QUERY:
         logger.error("QUERY が設定されていません")
@@ -42,10 +40,8 @@ STATE_FILE = os.getenv("SINCE_ID_FILE", "since_id.txt")
 SEARCH_URL = "https://api.x.com/2/tweets/search/recent"
 
 # Secret Manager設定
-PROJECT_ID = os.getenv(
-    "GOOGLE_CLOUD_PROJECT", os.getenv("GCP_PROJECT")
-)
-SINCE_ID_SECRET_NAME = "asai-x-bot-since-id"
+PROJECT_ID = os.getenv("GOOGLE_CLOUD_PROJECT", os.getenv("GCP_PROJECT"))
+SINCE_ID_SECRET_NAME = "asai-x-bot-since-id"  # nosec B105: Secret Manager resource name, not a credential
 
 
 # X API用のヘッダーとパラメータ
