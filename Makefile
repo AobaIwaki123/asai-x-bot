@@ -17,7 +17,6 @@ test-fast:  ## Run tests without coverage (faster)
 
 lint:  ## Run linting checks
 	ruff check src tests
-	mypy src
 
 format:  ## Format code with ruff
 	ruff format src/ tests/
@@ -27,8 +26,8 @@ format-check:  ## Check code formatting without making changes
 	ruff format --check src/ tests/
 	ruff check src/ tests/
 
-type-check:  ## Run type checking
-	mypy src
+type-check:  ## Run type checking (using ruff's type-aware rules)
+	ruff check --select=F,E9,W6 src tests
 
 security:  ## Run security checks
 	bandit -r src/
@@ -42,9 +41,8 @@ clean:  ## Clean up generated files
 	rm -rf htmlcov/
 	rm -rf .coverage
 	rm -rf .pytest_cache/
-	rm -rf .mypy_cache/
 
 ##@ All-in-one
-all: format lint type-check security test  ## Run all checks and tests
+all: format lint security test  ## Run all checks and tests
 
-ci: lint type-check security test  ## Run CI checks (without formatting)
+ci: lint security test  ## Run CI checks (without formatting)

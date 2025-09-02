@@ -12,21 +12,32 @@
     "doseq",
     "dotenv",
     "gcloud",
+    "htmlcov",
     "isort",
     "joqr",
     "Lemino",
     "levelname",
-    "mypy",
     "nohup",
     "noqa",
+    "nosec",
+    "pycache",
+    "pycodestyle",
+    "pyflakes",
+    "pylint",
     "pyproject",
     "pytest",
+    "PYTHONPATH",
+    "pyupgrade",
+    "repr",
     "ruff",
     "sakura",
     "sakurazaka",
     "secretmanager",
     "toml",
+    "toplevel",
+    "tryceratops",
     "urlencode",
+    "venv",
     "webhook"
   ],
   // Python 設定
@@ -53,7 +64,6 @@
     "--ignore-missing-imports",
     "--disable-error-code=import"
   ],
-  "mypy-type-checker.importStrategy": "fromEnvironment",
   // エディター設定
   "editor.rulers": [
     127

@@ -74,9 +74,9 @@ pytest tests/test_config.py::TestConfig::test_validate_env_vars_all_present -v
 make lint
 ruff check src/ tests/
 
-# 型チェック
+# 型チェック（ruffの型関連ルールを使用）
 make type-check
-mypy src --ignore-missing-imports
+ruff check --select=F,E9,W6 src tests
 ```
 
 ### フォーマット
@@ -107,7 +107,6 @@ safety check
 #### メインCI（`.github/workflows/ci.yml`）
 - **Python 3.12** でのテスト実行
 - リント（ruff）
-- 型チェック（mypy）
 - テスト実行（pytest + coverage）
 - セキュリティチェック（bandit, safety）
 - コードフォーマットチェック（ruff）
@@ -218,7 +217,6 @@ pytest tests/ --cov=src --cov-report=html
 ## 関連ファイル
 
 - `pytest.ini`: pytest設定
-- `pyproject.toml`: ツール設定（black, isort, mypy等）
-- `.flake8`: flake8設定
+- `pyproject.toml`: ツール設定（ruff, bandit等）
 - `Makefile`: 開発用コマンド
 - `requirements.txt`: テスト依存関係

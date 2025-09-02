@@ -34,9 +34,8 @@ def _load_since_id_from_secret_manager():
         if since_id:
             logger.info(f"Secret Manager から前回の処理IDを読み込み: {since_id}")
             return since_id
-        else:
-            logger.info("Secret Manager から空の処理IDを読み込み。初回実行として処理します")
-            return None
+        logger.info("Secret Manager から空の処理IDを読み込み。初回実行として処理します")
+        return None
     except Exception as e:
         logger.info(f"Secret Manager からの読み込みに失敗: {e}")
         return None
@@ -73,8 +72,8 @@ def _save_since_id_to_secret_manager(since_id: str):
         version_info = f"version: {response.name}"
         logger.info(f"Secret Manager に処理IDを保存: {since_id} ({version_info})")
 
-    except Exception as e:
-        logger.error(f"Secret Manager への保存に失敗: {e}")
+    except Exception:
+        logger.exception("Secret Manager への保存に失敗")
         raise
 
 
@@ -108,7 +107,6 @@ def load_since_id():
         if since_id is not None:
             return since_id
 
-    # フォールバック: ローカルファイル
     return _load_since_id_from_file()
 
 
@@ -122,7 +120,6 @@ def save_since_id(since_id: str):
         except Exception as e:
             logger.warning(f"Secret Manager への保存に失敗。ファイルにフォールバック: {e}")
 
-    # フォールバック: ローカルファイル
     _save_since_id_to_file(since_id)
 
 

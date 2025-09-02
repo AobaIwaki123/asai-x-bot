@@ -21,8 +21,8 @@ def discord_post(content=None, embed=None):
         r = requests.post(cast(str, WEBHOOK_URL), json=payload, timeout=15)
         r.raise_for_status()
         logger.info("Discordへの投稿が完了しました")
-    except Exception as e:
-        logger.error(f"Discordへの投稿に失敗しました: {e}")
+    except Exception:
+        logger.exception("Discordへの投稿に失敗しました")
         raise
 
 

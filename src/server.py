@@ -33,7 +33,7 @@ class BotHandler(BaseHTTPRequestHandler):
             self.end_headers()
             self.wfile.write(b'{"status": "success"}')
         except Exception as e:
-            logger.error(f"ボット実行中にエラーが発生: {e}")
+            logger.exception("ボット実行中にエラーが発生")
             self.send_response(500)
             self.send_header("Content-type", "application/json")
             self.end_headers()
@@ -47,7 +47,7 @@ class BotHandler(BaseHTTPRequestHandler):
 
 def run_server():
     """HTTPサーバーを起動"""
-    port = int(os.environ.get("PORT", 8080))
+    port = int(os.environ.get("PORT", "8080"))
     host = "0.0.0.0"  # Cloud Runではこれが重要  # nosec B104
 
     logger.info(f"サーバーを {host}:{port} で起動")
