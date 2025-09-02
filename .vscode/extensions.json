@@ -3,6 +3,7 @@
     "charliermarsh.ruff",
     "ms-python.python",
     "ms-python.debugpy",
+    "ms-python.mypy-type-checker",
     "ms-vscode.test-adapter-converter",
     "ms-python.pytest"
   ],

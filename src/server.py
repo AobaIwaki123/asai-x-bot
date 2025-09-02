@@ -8,7 +8,7 @@ import logging
 import os
 from http.server import BaseHTTPRequestHandler, HTTPServer
 
-from .main import main
+from main import main
 
 logger = logging.getLogger(__name__)
 
@@ -48,8 +48,11 @@ class BotHandler(BaseHTTPRequestHandler):
 def run_server():
     """HTTPサーバーを起動"""
     port = int(os.environ.get("PORT", 8080))
-    server = HTTPServer(("", port), BotHandler)
-    logger.info(f"サーバーをポート {port} で起動")
+    host = "0.0.0.0"  # Cloud Runではこれが重要  # nosec B104
+
+    logger.info(f"サーバーを {host}:{port} で起動")
+    server = HTTPServer((host, port), BotHandler)
+
     try:
         server.serve_forever()
     except KeyboardInterrupt:
@@ -58,4 +61,5 @@ def run_server():
 
 
 if __name__ == "__main__":
+    logger.info("サーバーを開始しています...")
     run_server()

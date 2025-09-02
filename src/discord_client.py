@@ -4,7 +4,7 @@ from typing import cast
 
 import requests
 
-from .config import WEBHOOK_URL
+from config import WEBHOOK_URL
 
 logger = logging.getLogger(__name__)
 

@@ -4,7 +4,7 @@ import os
 from google.api_core import exceptions as gcp_exceptions
 from google.cloud import secretmanager
 
-from .config import (
+from config import (
     PROJECT_ID,
     SINCE_ID_SECRET_NAME,
     STATE_FILE,

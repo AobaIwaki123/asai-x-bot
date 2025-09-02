@@ -17,7 +17,7 @@ test-fast:  ## Run tests without coverage (faster)
 
 lint:  ## Run linting checks
 	ruff check src tests
-	mypy src --ignore-missing-imports
+	mypy src
 
 format:  ## Format code with ruff
 	ruff format src/ tests/
@@ -28,7 +28,7 @@ format-check:  ## Check code formatting without making changes
 	ruff check src/ tests/
 
 type-check:  ## Run type checking
-	mypy src --ignore-missing-imports --disable-error-code=import
+	mypy src
 
 security:  ## Run security checks
 	bandit -r src/

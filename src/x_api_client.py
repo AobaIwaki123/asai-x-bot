@@ -5,7 +5,7 @@ from urllib.parse import urlencode
 
 import requests
 
-from .config import (
+from config import (
     SEARCH_URL,
     get_x_api_headers,
     get_x_api_params,

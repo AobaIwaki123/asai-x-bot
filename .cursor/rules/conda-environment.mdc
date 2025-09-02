@@ -1,0 +1,55 @@
+---
+alwaysApply: true
+---
+
+# Conda Environment Rule - ASAI Environment
+
+## Python環境の要件
+
+このプロジェクトではPython関連のコマンドを実行する際、**必ずconda環境 `asai` をアクティベート**してください。
+
+### 環境確認コマンド
+```bash
+# 現在のconda環境を確認
+conda info --envs
+# または
+conda env list
+
+# アクティブな環境を確認
+echo $CONDA_DEFAULT_ENV
+```
+
+### 環境アクティベーション
+```bash
+# asai環境をアクティベート
+conda activate asai
+```
+
+### Python コマンド実行前のチェックリスト
+1. ✅ `conda activate asai` が実行済みであること
+2. ✅ `echo $CONDA_DEFAULT_ENV` で "asai" が表示されること
+3. ✅ `which python` で正しいPythonパスが表示されること（通常: `/path/to/conda/envs/asai/bin/python`）
+
+### 対象となるPythonコマンド
+- `python` または `python3`
+- `pip` または `pip3`
+- `pytest`
+- `python -m pytest`
+- `python run.py`
+- その他のPythonスクリプト実行
+
+### 初回セットアップ
+環境が存在しない場合は、プロジェクトルートで以下を実行：
+```bash
+./setup_conda.sh
+```
+
+### Cursor IDE設定
+Pythonインタープリターは以下のパスを使用：
+```
+$(conda info --base)/envs/asai/bin/python
+```
+
+**注意**: conda環境が正しくアクティベートされていない状態でPythonコマンドを実行すると、依存関係エラーや予期しない動作を引き起こす可能性があります。
+
+参考ファイル: [setup_conda.sh](mdc:setup_conda.sh), [requirements.txt](mdc:requirements.txt)
