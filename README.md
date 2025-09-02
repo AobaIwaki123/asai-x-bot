@@ -9,7 +9,7 @@
 - X APIを使用したリアルタイム投稿監視
 - 特定のハッシュタグとアカウントからの投稿を自動検出
 - Discord Webhookを使用した自動転送
-- 重複投稿の防止（since_id管理）
+- 重複投稿の防止（since_id管理・Secret Manager永続化）
 - ログ出力による動作状況の可視化
 
 ## システム動作フロー
@@ -22,7 +22,7 @@ sequenceDiagram
     participant CR as Cloud Run<br/>(asai-x-bot)
     participant SM as Secret Manager
     participant XA as X API
-    participant XS as since_id.txt<br/>(X API状態管理)
+    participant XS as Secret Manager<br/>(since_id永続化)
     participant DC as Discord
 
     Note over CS: 15分ごとに実行<br/>("*/15 * * * *")
@@ -30,12 +30,12 @@ sequenceDiagram
     CS->>CR: HTTP POST リクエスト<br/>(OIDC認証)
     
     Note over CR: server.py が受信
-    CR->>SM: シークレット取得<br/>(X_BEARER_TOKEN,<br/>DISCORD_WEBHOOK_URL)
-    SM-->>CR: 認証情報
+    CR->>SM: シークレット取得<br/>(X_BEARER_TOKEN,<br/>DISCORD_WEBHOOK_URL,<br/>since_id)
+    SM-->>CR: 認証情報・状態データ
     
     Note over CR: main.py 実行開始
     
-    CR->>XS: 前回取得済みID読み込み<br/>(/tmp/data/since_id.txt)
+    CR->>XS: 前回取得済みID読み込み<br/>(Secret Manager)
     XS-->>CR: since_id値
     
     CR->>XA: ツイート取得<br/>(since_id指定)<br/>クエリ: #浅井恋乃未<br/>from:sakurazaka46 等
@@ -49,8 +49,8 @@ sequenceDiagram
         DC-->>CR: 投稿完了
     end
     
-    CR->>XS: 最新ツイートID保存<br/>(次回のsince_id用)
-    Note over XS: X API重複防止<br/>状態を更新
+    CR->>XS: 最新ツイートID保存<br/>(Secret Manager)<br/>(次回のsince_id用)
+    Note over XS: X API重複防止<br/>状態を永続化
     
     CR-->>CS: HTTP 200 OK<br/>{"status": "success"}
 ```
@@ -76,6 +76,7 @@ sequenceDiagram
 - Miniconda/Anaconda（conda環境使用の場合）
 - X API Bearer Token
 - Discord Webhook URL
+- Google Cloud Project（Secret Manager使用時）
 - Cursor IDE（開発環境として推奨）
 
 ## API制限について
@@ -107,6 +108,9 @@ conda create -n asai python=3.12 -y
 conda activate asai
 
 # 依存関係をインストール
+# - python-dotenv: 環境変数管理
+# - requests: HTTPリクエスト
+# - google-cloud-secret-manager: Secret Managerクライアント（Cloud Run用）
 pip install -r requirements.txt
 ```
 
@@ -197,20 +201,28 @@ asai-x-bot/
 ├── README.md              # このファイル
 ├── requirements.txt       # Python依存関係
 ├── example.env           # 環境変数テンプレート
-├── since_id.txt          # 最後に処理した投稿ID（自動生成）
+├── since_id.txt          # 最後に処理した投稿ID（ローカルフォールバック用）
+├── deploy-cloud-run.sh   # Cloud Run自動デプロイスクリプト
+├── Dockerfile            # コンテナ設定
 └── src/
     ├── __init__.py
-    └── asai-radar.py     # メインスクリプト
+    ├── config.py         # 設定管理
+    ├── main.py           # メイン処理
+    ├── run.py            # エントリーポイント
+    ├── server.py         # HTTPサーバー
+    ├── utils.py          # ユーティリティ関数
+    ├── discord_client.py # Discordクライアント
+    └── x_api_client.py   # X APIクライアント
 ```
 
 ## 動作の仕組み
 
 1. **初期化**: 環境変数を読み込み、X APIとDiscord Webhookの設定を確認
-2. **状態管理**: `since_id.txt`から前回処理した投稿IDを読み込み
+2. **状態管理**: Secret Manager（Cloud Run）または`since_id.txt`（ローカル）から前回処理した投稿IDを読み込み
 3. **投稿検索**: X APIを使用して新しい投稿を検索
 4. **重複チェック**: 既に処理済みの投稿はスキップ
 5. **Discord転送**: 新しい投稿をDiscord Webhookで転送
-6. **状態更新**: 処理した投稿IDを保存
+6. **状態更新**: 処理した投稿IDをSecret Manager（Cloud Run）またはファイル（ローカル）に保存
 
 ## システムアーキテクチャ
 
@@ -234,7 +246,7 @@ graph TD
             end
         end
         
-        SM["Secret Manager<br/>- asai-x-bot-x-bearer-token<br/>- asai-x-bot-discord-webhook"]
+        SM["Secret Manager<br/>- asai-x-bot-x-bearer-token<br/>- asai-x-bot-discord-webhook<br/>- asai-x-bot-since-id"]
         
         SA1["Service Account<br/>project-compute@<br/>(Cloud Run Default)<br/>Role: secretmanager.secretAccessor"]
         
@@ -244,7 +256,10 @@ graph TD
     subgraph "External Services"
         subgraph "X (Twitter) API"
             XA["X API Endpoint<br/>Bearer Token Auth"]
-            XS["/tmp/data/since_id.txt<br/>(Last Tweet ID Storage)<br/>X API 状態管理"]
+        end
+        
+        subgraph "State Management"
+            XS["Local: /tmp/data/since_id.txt<br/>Cloud: Secret Manager<br/>(since_id 永続化)"]
         end
         DW["Discord Webhook<br/>Channel Notification"]
     end
@@ -262,8 +277,11 @@ graph TD
     XC -->|"Bearer Token<br/>API Request<br/>(since_id parameter)"| XA
     XA -->|"Tweet Data<br/>(JSON)"| XC
     
-    XC -.->|"Read Last ID<br/>Write New Max ID"| XS
-    XS -.->|"Prevents Duplicate<br/>Tweet Processing"| XC
+    UT -->|"Read Last ID<br/>Write New Max ID"| XS
+    XS -.->|"Prevents Duplicate<br/>Tweet Processing"| UT
+    UT -.->|"State Management"| MN
+    
+    SM -.->|"Cloud: since_id<br/>Persistent Storage"| XS
     
     DC_CLIENT -->|"Webhook POST<br/>Embed Data"| DW
     
@@ -303,7 +321,10 @@ export REGION="asia-northeast1"  # オプション（デフォルト値）
 
 1. 必要なGoogle Cloud APIの有効化
 2. Dockerイメージのビルドとプッシュ
-3. Secret Manager でのAPIキー管理
+3. Secret Manager でのAPIキー・状態管理
+   - X_BEARER_TOKEN
+   - DISCORD_WEBHOOK_URL
+   - since_id 永続化
 4. Cloud Runサービスのデプロイ
 5. Cloud Schedulerによる15分間隔の定期実行設定
 
@@ -327,6 +348,9 @@ echo "your-x-bearer-token" | gcloud secrets create asai-x-bot-x-bearer-token --d
 
 # Discord Webhook URL
 echo "your-discord-webhook-url" | gcloud secrets create asai-x-bot-discord-webhook --data-file=-
+
+# Since ID 永続化用（初期値は空）
+echo "" | gcloud secrets create asai-x-bot-since-id --data-file=-
 ```
 
 #### 3. Cloud Runサービスのデプロイ
@@ -343,6 +367,7 @@ gcloud run deploy asai-x-bot \
     --concurrency 1 \
     --max-instances 1 \
     --set-env-vars "QUERY=(#浅井恋乃未) (from:sakurazaka46 OR from:sakura_joqr OR from:anan_mag OR from:Lemino_official)" \
+    --set-env-vars "GOOGLE_CLOUD_PROJECT=PROJECT_ID" \
     --set-secrets "X_BEARER_TOKEN=asai-x-bot-x-bearer-token:latest" \
     --set-secrets "DISCORD_WEBHOOK_URL=asai-x-bot-discord-webhook:latest"
 ```
