@@ -12,6 +12,7 @@
     "doseq",
     "dotenv",
     "gcloud",
+    "isort",
     "joqr",
     "Lemino",
     "levelname",
