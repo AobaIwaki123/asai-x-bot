@@ -27,11 +27,7 @@ class TestXApiClient:
                     "author_id": "user1",
                 }
             ],
-            "includes": {
-                "users": [
-                    {"id": "user1", "username": "testuser"}
-                ]
-            },
+            "includes": {"users": [{"id": "user1", "username": "testuser"}]},
         }
 
         responses.add(
@@ -44,9 +40,7 @@ class TestXApiClient:
         with (
             patch(
                 "src.x_api_client.get_x_api_headers",
-                return_value={
-                    "Authorization": "Bearer test"
-                },
+                return_value={"Authorization": "Bearer test"},
             ),
             patch(
                 "src.x_api_client.get_x_api_params",
@@ -82,9 +76,7 @@ class TestXApiClient:
         with (
             patch(
                 "src.x_api_client.get_x_api_headers",
-                return_value={
-                    "Authorization": "Bearer test"
-                },
+                return_value={"Authorization": "Bearer test"},
             ),
             patch(
                 "src.x_api_client.get_x_api_params",
@@ -124,9 +116,7 @@ class TestXApiClient:
         with (
             patch(
                 "src.x_api_client.get_x_api_headers",
-                return_value={
-                    "Authorization": "Bearer test"
-                },
+                return_value={"Authorization": "Bearer test"},
             ),
             patch(
                 "src.x_api_client.get_x_api_params",
@@ -135,9 +125,7 @@ class TestXApiClient:
                     "max_results": 50,
                 },
             ),
-            patch(
-                "src.x_api_client.time.sleep"
-            ) as mock_sleep,
+            patch("src.x_api_client.time.sleep") as mock_sleep,
         ):
             result = fetch_tweets()
             assert result is None
@@ -156,9 +144,7 @@ class TestXApiClient:
         with (
             patch(
                 "src.x_api_client.get_x_api_headers",
-                return_value={
-                    "Authorization": "Bearer test"
-                },
+                return_value={"Authorization": "Bearer test"},
             ),
             patch(
                 "src.x_api_client.get_x_api_params",
@@ -168,9 +154,7 @@ class TestXApiClient:
                 },
             ),
         ):
-            with pytest.raises(
-                requests.exceptions.HTTPError
-            ):
+            with pytest.raises(requests.exceptions.HTTPError):
                 fetch_tweets()
 
     @responses.activate
@@ -185,9 +169,7 @@ class TestXApiClient:
         with (
             patch(
                 "src.x_api_client.get_x_api_headers",
-                return_value={
-                    "Authorization": "Bearer test"
-                },
+                return_value={"Authorization": "Bearer test"},
             ),
             patch(
                 "src.x_api_client.get_x_api_params",
@@ -209,22 +191,16 @@ class TestXApiClient:
             "x-rate-limit-reset": "1640995200",
         }
 
-        with patch(
-            "src.x_api_client.logger"
-        ) as mock_logger:
+        with patch("src.x_api_client.logger") as mock_logger:
             log_rate_limit_info(mock_response)
             assert mock_logger.info.call_count == 3
 
     def test_log_rate_limit_info_partial_headers(self):
         """一部のレート制限ヘッダーのみ存在する場合のテスト"""
         mock_response = MagicMock()
-        mock_response.headers = {
-            "x-rate-limit-limit": "300"
-        }
+        mock_response.headers = {"x-rate-limit-limit": "300"}
 
-        with patch(
-            "src.x_api_client.logger"
-        ) as mock_logger:
+        with patch("src.x_api_client.logger") as mock_logger:
             log_rate_limit_info(mock_response)
             assert mock_logger.info.call_count == 1
 
@@ -233,8 +209,6 @@ class TestXApiClient:
         mock_response = MagicMock()
         mock_response.headers = {}
 
-        with patch(
-            "src.x_api_client.logger"
-        ) as mock_logger:
+        with patch("src.x_api_client.logger") as mock_logger:
             log_rate_limit_info(mock_response)
             assert mock_logger.info.call_count == 0
