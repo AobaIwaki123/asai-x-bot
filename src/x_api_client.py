@@ -5,7 +5,7 @@ from urllib.parse import urlencode
 
 import requests  # type: ignore
 
-from config import (  # type: ignore
+from config import (
     SEARCH_URL,
     get_x_api_headers,
     get_x_api_params,

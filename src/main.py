@@ -1,9 +1,9 @@
 import logging
 
-from config import validate_env_vars  # type: ignore
-from discord_client import discord_post, to_embed  # type: ignore
-from utils import build_index, load_since_id, save_since_id  # type: ignore
-from x_api_client import fetch_tweets  # type: ignore
+from config import validate_env_vars
+from discord_client import discord_post, to_embed
+from utils import build_index, load_since_id, save_since_id
+from x_api_client import fetch_tweets
 
 logger = logging.getLogger(__name__)
 

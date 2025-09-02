@@ -3,7 +3,7 @@ import logging
 
 import requests  # type: ignore
 
-from config import WEBHOOK_URL  # type: ignore
+from config import WEBHOOK_URL
 
 logger = logging.getLogger(__name__)
 
