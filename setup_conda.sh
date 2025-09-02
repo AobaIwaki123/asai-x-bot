@@ -4,6 +4,19 @@
 
 echo "🚀 ASAI X Bot conda環境をセットアップしています..."
 
+# Anaconda Terms of Service acceptance (non-interactive)
+echo "📄 Anacondaの利用規約(TOS)を受諾しています..."
+if conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/main \
+    && conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/r; then
+    echo "✅ TOSの受諾が完了しました（または既に受諾済み）"
+else
+    echo "❌ TOSの受諾に失敗しました"
+    echo "   手動で以下を実行してください:"
+    echo "   conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/main"
+    echo "   conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/r"
+    exit 1
+fi
+
 # conda環境の存在確認
 if conda env list | grep -q "^asai "; then
     echo "✅ conda環境 'asai' は既に存在します"
