@@ -8,7 +8,7 @@ import logging
 import os
 from http.server import BaseHTTPRequestHandler, HTTPServer
 
-from main import main  # type: ignore
+from main import main
 
 logger = logging.getLogger(__name__)
 

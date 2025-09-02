@@ -48,6 +48,12 @@
   // Ruff設定ファイルを明示的に指定
   "ruff.configurationPreference": "filesystemFirst",
   "ruff.importStrategy": "fromEnvironment",
+  // Mypy 設定
+  "mypy-type-checker.args": [
+    "--ignore-missing-imports",
+    "--disable-error-code=import"
+  ],
+  "mypy-type-checker.importStrategy": "fromEnvironment",
   // エディター設定
   "editor.rulers": [
     127
