@@ -1,4 +1,5 @@
 import logging
+import sys
 
 from config import validate_env_vars
 from discord_client import discord_post, to_embed
@@ -57,14 +58,14 @@ def main():
     # 環境変数の検証
     if not validate_env_vars():
         logger.error("環境変数の検証に失敗しました")
-        exit(1)
+        sys.exit(1)
 
     try:
         fetch_and_forward()
         logger.info("=== ASAI X Bot 正常終了 ===")
-    except Exception as e:
-        logger.error(f"=== ASAI X Bot 異常終了: {e} ===")
-        exit(1)
+    except Exception:
+        logger.exception("=== ASAI X Bot 異常終了 ===")
+        sys.exit(1)
 
 
 if __name__ == "__main__":

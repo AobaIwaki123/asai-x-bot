@@ -57,8 +57,8 @@ def fetch_tweets(since_id=None):
         payload = res.json()
         logger.info("X APIからのレスポンス取得成功")
         return payload
-    except Exception as e:
-        logger.error(f"X APIからのレスポンス取得に失敗: {e}")
+    except Exception:
+        logger.exception("X APIからのレスポンス取得に失敗")
         raise
 
 
