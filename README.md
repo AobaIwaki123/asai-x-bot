@@ -74,7 +74,7 @@ sequenceDiagram
 
 ## 必要環境
 
-- Python 3.12以上（conda環境推奨）
+- Python 3.13以上（conda環境推奨）
 - Miniconda/Anaconda（conda環境使用の場合）
 - X API Bearer Token
 - Discord Webhook URL
@@ -106,7 +106,7 @@ git clone <repository-url>
 cd asai-x-bot
 
 # conda環境を作成・有効化
-conda create -n asai python=3.12 -y
+conda create -n asai python=3.13 -y
 conda activate asai
 
 # 依存関係をインストール

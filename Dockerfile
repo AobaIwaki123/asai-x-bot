@@ -1,5 +1,5 @@
-# Python 3.12 slim image
-FROM python:3.12-slim
+# Python 3.13 slim image
+FROM python:3.13-slim
 
 # 作業ディレクトリを設定
 WORKDIR /app

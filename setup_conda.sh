@@ -22,7 +22,7 @@ if conda env list | grep -q "^asai "; then
     echo "✅ conda環境 'asai' は既に存在します"
 else
     echo "📦 conda環境 'asai' を作成しています..."
-    if conda create -n asai python=3.12 -y; then
+    if conda create -n asai python=3.13 -y; then
         echo "✅ conda環境 'asai' を作成しました"
     else
         echo "❌ conda環境の作成に失敗しました"
