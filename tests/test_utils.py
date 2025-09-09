@@ -167,6 +167,7 @@ class TestUtils:
                 return_value="cloud_id",
             ),
             patch("src.utils._load_since_id_from_file", return_value="file_id"),
+            patch("src.utils.is_since_id_valid", return_value=True),
         ):
             result = load_since_id()
             assert result == "cloud_id"
@@ -176,6 +177,7 @@ class TestUtils:
         with (
             patch("src.utils.PROJECT_ID", None),
             patch("src.utils._load_since_id_from_file", return_value="file_id"),
+            patch("src.utils.is_since_id_valid", return_value=True),
         ):
             result = load_since_id()
             assert result == "file_id"
@@ -200,3 +202,27 @@ class TestUtils:
         ):
             save_since_id("test_id")
             mock_file_save.assert_called_once_with("test_id")
+
+    def test_load_since_id_invalid_cloud_run(self):
+        """Cloud Run環境で無効なsince_idの場合のテスト"""
+        with (
+            patch("src.utils.PROJECT_ID", "test-project"),
+            patch.dict(os.environ, {"K_SERVICE": "test-service"}),
+            patch(
+                "src.utils._load_since_id_from_secret_manager",
+                return_value="invalid_id",
+            ),
+            patch("src.utils.is_since_id_valid", return_value=False),
+        ):
+            result = load_since_id()
+            assert result is None
+
+    def test_load_since_id_invalid_local(self):
+        """ローカル環境で無効なsince_idの場合のテスト"""
+        with (
+            patch("src.utils.PROJECT_ID", None),
+            patch("src.utils._load_since_id_from_file", return_value="invalid_id"),
+            patch("src.utils.is_since_id_valid", return_value=False),
+        ):
+            result = load_since_id()
+            assert result is None
