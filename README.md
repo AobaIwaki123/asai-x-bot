@@ -91,7 +91,7 @@ sequenceDiagram
 
 ```bash
 # リポジトリをクローン
-git clone <repository-url>
+git clone https://github.com/AobaIwaki123/asai-x-bot.git
 cd asai-x-bot
 
 # conda環境を自動セットアップ
@@ -102,7 +102,7 @@ cd asai-x-bot
 
 ```bash
 # リポジトリをクローン
-git clone <repository-url>
+git clone https://github.com/AobaIwaki123/asai-x-bot.git
 cd asai-x-bot
 
 # conda環境を作成・有効化
@@ -120,7 +120,7 @@ pip install -r requirements.txt
 
 ```bash
 # リポジトリをクローン
-git clone <repository-url>
+git clone https://github.com/AobaIwaki123/asai-x-bot.git
 cd asai-x-bot
 
 # 依存関係をインストール
@@ -181,7 +181,7 @@ cd src && python run.py
 #### conda環境使用の場合
 ```bash
 # 1日1回実行（午前9時）
-0 9 * * * cd /path/to/asai-x-bot && /opt/homebrew/Caskroom/miniconda/base/envs/asai/bin/python src/run.py >> logs/bot.log 2>&1
+0 9 * * * cd /path/to/asai-x-bot && $(conda info --base)/envs/asai/bin/python src/run.py >> logs/bot.log 2>&1
 ```
 
 #### システムPython使用の場合
@@ -193,7 +193,7 @@ cd src && python run.py
 ### バックグラウンド実行
 
 ```bash
-nohup python src/asai-radar.py > bot.log 2>&1 &
+nohup python src/run.py > bot.log 2>&1 &
 ```
 
 ## ファイル構成
