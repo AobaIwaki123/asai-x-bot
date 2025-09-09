@@ -77,7 +77,7 @@ cd src && python run.py
 
 ## 開発ツール設定
 
-- **Python**: 3.12以上
+- **Python**: 3.13以上
 - **フォーマッター**: ruff (line-length: 127)
 - **リンター**: ruff (包括的なルールセット)
 - **セキュリティ**: bandit (セキュリティチェック専用)

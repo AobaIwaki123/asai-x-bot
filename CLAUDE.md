@@ -25,7 +25,7 @@ echo $CONDA_DEFAULT_ENV  # should show "asai"
 ./setup_conda.sh
 
 # Manual setup alternative
-conda create -n asai python=3.12 -y
+conda create -n asai python=3.13 -y
 conda activate asai
 pip install -r requirements.txt
 ```
@@ -151,7 +151,7 @@ export REGION="asia-northeast1"
 ### Linting/Formatting
 - **Tool**: ruff (unified linting and formatting)
 - **Line length**: 127 characters
-- **Python version**: 3.12+
+- **Python version**: 3.13+
 - **Quote style**: double quotes
 
 ### Security

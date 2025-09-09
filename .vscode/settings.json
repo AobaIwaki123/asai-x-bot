@@ -41,7 +41,7 @@
     "webhook"
   ],
   // Python 設定
-  "python.defaultInterpreterPath": "python3.12",
+  "python.defaultInterpreterPath": "python3.13",
   // フォーマッター設定 - Ruffを使用
   "[python]": {
     "editor.defaultFormatter": "charliermarsh.ruff",

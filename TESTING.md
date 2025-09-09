@@ -105,7 +105,7 @@ safety check
 ### ワークフロー
 
 #### メインCI（`.github/workflows/ci.yml`）
-- **Python 3.12** でのテスト実行
+- **Python 3.13** でのテスト実行
 - リント（ruff）
 - テスト実行（pytest + coverage）
 - セキュリティチェック（bandit, safety）
