@@ -1,0 +1,53 @@
+---
+description: Deployment patterns for local development and Cloud Run production
+---
+
+# デプロイメント パターン
+
+## 実行環境
+
+### ローカル開発
+```bash
+conda activate asai
+cd src && python run.py
+```
+- **状態管理**: ローカルファイル ([since_id.txt](mdc:since_id.txt))
+- **設定**: [.env](mdc:example.env) ファイル
+- **ログ**: コンソール出力
+
+### Cloud Run本番環境
+- **エントリーポイント**: [src/server.py](mdc:src/server.py) (HTTPサーバー)
+- **トリガー**: Cloud Scheduler (1日1回 午前9時)
+- **状態管理**: Secret Manager
+- **設定**: 環境変数
+- **認証**: Cloud Run認証でScheduler以外からのアクセス制限
+
+## デプロイメント手順
+
+### 自動デプロイ
+```bash
+./deploy-cloud-run.sh
+```
+- Container Registry にプッシュ
+- Cloud Run サービス更新
+- 環境変数設定
+- Secret Manager権限設定
+
+### 環境判定ロジック
+```python
+# Cloud Run環境の判定
+if PROJECT_ID and os.getenv("K_SERVICE"):
+    # Cloud Run環境 → Secret Manager使用
+else:
+    # ローカル環境 → ファイル使用
+```
+
+## 設定ファイル
+- [Dockerfile](mdc:Dockerfile): コンテナ設定
+- [deploy-cloud-run.sh](mdc:deploy-cloud-run.sh): デプロイスクリプト
+- [example.env](mdc:example.env): ローカル開発用環境変数テンプレート
+
+## セキュリティ
+- APIキー: Secret Manager管理
+- 認証情報: ログに出力しない
+- Cloud Run認証: Scheduler以外アクセス拒否

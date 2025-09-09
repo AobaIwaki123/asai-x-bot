@@ -1,0 +1,63 @@
+---
+globs: test_*.py,*_test.py,tests/**/*.py,src/**/*.py
+description: Testing patterns and code quality standards
+---
+
+# テスト・品質管理ルール
+
+## テスト実行
+```bash
+# 全テスト実行
+make test
+
+# カバレッジ付きテスト
+make test-coverage
+
+# 特定テストファイル
+conda activate asai && python -m pytest tests/test_utils.py -v
+```
+
+## コード品質ツール
+
+### ruff (フォーマッター・リンター)
+- **line-length**: 127文字
+- **包括的ルールセット**: import順序、型チェック、コードスタイル
+- 設定: [pyproject.toml](mdc:pyproject.toml)
+
+### bandit (セキュリティチェック)
+- **用途**: セキュリティ脆弱性検出専用
+- **除外**: Secret Manager resource name等の誤検出を除外
+
+### pytest + coverage
+- **最小カバレッジ**: 90%
+- **設定**: [pytest.ini](mdc:pytest.ini)
+- **レポート**: HTMLカバレッジレポート生成
+
+## テストパターン
+
+### モックの使用
+```python
+@patch("src.x_api_client.requests.get")
+def test_api_call(mock_get):
+    # 外部API呼び出しをモック
+```
+
+### 環境変数テスト
+```python
+@patch.dict(os.environ, {"TEST_VAR": "test_value"})
+def test_with_env_var():
+    # 環境変数を一時的に設定
+```
+
+### ファイルI/Oテスト
+```python
+def test_file_operations(tmp_path):
+    # pytest の tmp_path fixture使用
+```
+
+## 品質チェックコマンド
+```bash
+make lint          # ruff + bandit
+make format        # ruff format
+make check-all     # 全チェック実行
+```
