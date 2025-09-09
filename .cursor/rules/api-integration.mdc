@@ -1,0 +1,39 @@
+---
+description: X API and Discord integration patterns and limitations
+---
+
+# API統合ガイド
+
+## X API制限と対応
+
+### 検索制限
+- **7日制限**: recent search は過去7日以内のツイートのみ
+- **since_id**: 7日より古い場合は自動的にリセット（[src/utils.py](mdc:src/utils.py)の`is_since_id_valid`関数）
+- **レート制限**: 1リクエスト/15分（個人アカウント）
+
+### 監視クエリ
+```
+(#浅井恋乃未) (from:sakurazaka46 OR from:sakura_joqr OR from:anan_mag OR from:Lemino_official)
+```
+
+### エラーハンドリングパターン
+- **400 Bad Request**: since_idが古い場合 → 自動リセット
+- **429 Rate Limit**: 15分待機後リトライ
+- **その他**: ログ出力して異常終了
+
+## Discord Webhook
+- **投稿形式**: ツイートURL直接投稿
+- **順序**: 古い順（時系列で読みやすく）
+- **URL形式**: `https://x.com/{username}/status/{tweet_id}`
+
+## 状態管理
+### since_id保存場所
+- **Cloud Run**: Secret Manager (`asai-x-bot-since-id`)
+- **ローカル**: ファイル ([since_id.txt](mdc:since_id.txt))
+- **フォールバック**: Secret Manager失敗時は自動的にローカルファイル使用
+
+### データフロー
+1. since_id読み込み → 7日制限チェック
+2. X API検索 → レート制限チェック
+3. Discord投稿 → 古い順
+4. since_id保存

@@ -1,0 +1,46 @@
+---
+description: Conda environment and development setup requirements
+---
+
+# ASAI X Bot - 環境設定ルール
+
+## Conda環境の必須要件
+このプロジェクトではPython関連のコマンドを実行する際、**必ずconda環境 `asai` をアクティベート**してください。
+
+### 環境アクティベーション手順
+```bash
+# asai環境をアクティベート
+conda activate asai
+
+# 環境確認
+echo $CONDA_DEFAULT_ENV  # "asai" が表示されること
+```
+
+### 初回セットアップ
+環境が存在しない場合は、プロジェクトルートで以下を実行：
+```bash
+./setup_conda.sh
+```
+
+### 対象となるPythonコマンド
+- `python` または `python3`
+- `pip` または `pip3`
+- `pytest`
+- `python -m pytest`
+- `python run.py`
+- その他のPythonスクリプト実行
+
+## 重要な環境変数
+### 必須
+- `X_BEARER_TOKEN`: X API Bearer Token
+- `DISCORD_WEBHOOK_URL`: Discord Webhook URL
+- `QUERY`: 監視対象クエリ
+
+### オプション
+- `GOOGLE_CLOUD_PROJECT`: GCPプロジェクトID（Cloud Run時）
+- `SINCE_ID_FILE`: since_id保存ファイルパス（デフォルト: `since_id.txt`）
+
+## 設定ファイル
+- [example.env](mdc:example.env): 環境変数テンプレート
+- [setup_conda.sh](mdc:setup_conda.sh): 開発環境セットアップスクリプト
+- [requirements.txt](mdc:requirements.txt): Python依存関係
