@@ -1,0 +1,105 @@
+---
+description: Custom deployment patterns for multiple bot instances
+---
+
+# カスタムデプロイメント パターン
+
+## 概要
+
+デフォルト以外のクエリを使用する場合、独立したCloud Runサービスとしてデプロイ可能です。これにより、異なる検索パターンを監視する複数のボットインスタンスを並行して運用できます。
+
+## デプロイコマンド
+
+### 基本構文
+```bash
+./deploy-cloud-run.sh [オプション]
+```
+
+### オプション
+- **-n, --name SERVICE_NAME**: カスタムサービス名を指定（デフォルト: asai-x-bot）
+- **-q, --query QUERY**: カスタム検索クエリを指定
+- **-h, --help**: ヘルプメッセージを表示
+
+## デプロイ例
+
+### ニュース関連の投稿を監視
+```bash
+./deploy-cloud-run.sh \
+  --name asai-x-bot-news \
+  --query '(#浅井恋乃未) (news OR ニュース OR 速報)'
+```
+
+### 特定のアカウントを追加で監視
+```bash
+./deploy-cloud-run.sh \
+  --name asai-x-bot-extended \
+  --query '(#浅井恋乃未) (from:sakurazaka46 OR from:natalie_mu)'
+```
+
+### メディア付き投稿のみ監視
+```bash
+./deploy-cloud-run.sh \
+  --name asai-x-bot-media \
+  --query '(#浅井恋乃未) has:media'
+```
+
+## リソース管理
+
+### 動的リソース名
+各サービスは以下の独立したリソースを持ちます：
+- **Cloud Runサービス**: `{service-name}`
+- **シークレット**:
+  - `{service-name}-x-bearer-token`
+  - `{service-name}-discord-webhook`
+  - `{service-name}-since-id`
+- **Schedulerジョブ**: `{service-name}-schedule`
+- **Service Account**: `{service-name}-scheduler@{project-id}.iam.gserviceaccount.com`
+
+### 状態の独立性
+- 各サービスは独自のsince_idを管理
+- 重複なく並行動作可能
+- Discord Webhookは共有または個別設定可能
+
+## 注意事項
+
+### X API制限
+- 同一のBearer Tokenを使用する場合、API制限は共有される
+- 過度な並行デプロイは避ける
+
+### コスト管理
+- 各サービスは独立したCloud Runインスタンス
+- Secret Manager、Cloud Schedulerのコストも考慮
+
+### メンテナンス
+- 各サービスは個別に更新・削除が必要
+- シークレットの更新も個別に実施
+
+## トラブルシューティング
+
+### ログ確認
+```bash
+# 特定サービスのログ
+gcloud logging read 'resource.type=cloud_run_revision AND resource.labels.service_name={service-name}' --limit=50
+```
+
+### 手動実行
+```bash
+# 特定サービスのSchedulerジョブを手動実行
+gcloud scheduler jobs run {service-name}-schedule --location={region}
+```
+
+### サービス削除
+```bash
+# Cloud Runサービス削除
+gcloud run services delete {service-name} --region={region}
+
+# Schedulerジョブ削除
+gcloud scheduler jobs delete {service-name}-schedule --location={region}
+
+# シークレット削除（注意：データが失われます）
+gcloud secrets delete {service-name}-x-bearer-token
+gcloud secrets delete {service-name}-discord-webhook
+gcloud secrets delete {service-name}-since-id
+```
+
+参考: [deploy-cloud-run.sh](mdc:deploy-cloud-run.sh), [deploy-examples.sh](mdc:deploy-examples.sh)

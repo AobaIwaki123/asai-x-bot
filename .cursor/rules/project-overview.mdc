@@ -38,7 +38,8 @@ description: "ASAI X Bot プロジェクトの基本情報とアーキテクチ�
 - [requirements.txt](mdc:requirements.txt): Python依存関係
 - [Dockerfile](mdc:Dockerfile): コンテナ設定
 - [setup_conda.sh](mdc:setup_conda.sh): 開発環境セットアップ
-- [deploy-cloud-run.sh](mdc:deploy-cloud-run.sh): 自動デプロイスクリプト
+- [deploy-cloud-run.sh](mdc:deploy-cloud-run.sh): 自動デプロイスクリプト（カスタムクエリ対応）
+- [deploy-examples.sh](mdc:deploy-examples.sh): デプロイ例集
 
 ## 重要な環境変数
 
@@ -55,9 +56,10 @@ description: "ASAI X Bot プロジェクトの基本情報とアーキテクチ�
 ## 状態管理の仕組み
 
 ### since_id管理（重複防止）
-- **Cloud Run**: Secret Manager `asai-x-bot-since-id`
+- **Cloud Run**: Secret Manager `{service-name}-since-id`
 - **ローカル**: ファイル `since_id.txt`
 - **フォールバック**: Secret Manager失敗時は自動的にローカルファイルを使用
+- **カスタムデプロイ**: サービス名ベースの独立したシークレット管理
 
 ### 環境判定
 - Cloud Run環境: `K_SERVICE` 環境変数の存在で判定

@@ -24,7 +24,8 @@ description: ASAI X Bot project structure and core components
 - **環境設定**: [example.env](mdc:example.env) - 環境変数テンプレート
 - **開発環境**: [setup_conda.sh](mdc:setup_conda.sh) - conda環境構築
 - **コンテナ**: [Dockerfile](mdc:Dockerfile) - Cloud Run用
-- **デプロイ**: [deploy-cloud-run.sh](mdc:deploy-cloud-run.sh) - 自動デプロイ
+- **デプロイ**: [deploy-cloud-run.sh](mdc:deploy-cloud-run.sh) - 自動デプロイ（カスタムクエリ対応）
+- **デプロイ例**: [deploy-examples.sh](mdc:deploy-examples.sh) - 使用例集
 
 ## テスト・品質管理
 - **テスト**: [tests/](mdc:tests/) - pytest テストスイート
