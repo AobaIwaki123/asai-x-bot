@@ -15,6 +15,11 @@ description: X API and Discord integration patterns and limitations
 ```
 (#浅井恋乃未) (from:sakurazaka46 OR from:sakura_joqr OR from:anan_mag OR from:Lemino_official)
 ```
+- **カスタマイズ可能**: デプロイ時に `--query` オプションで指定
+- **クエリ例**:
+  - メディア付き: `(#浅井恋乃未) has:media`
+  - 画像のみ: `(#浅井恋乃未) has:images`
+  - ニュース: `(#浅井恋乃未) (news OR ニュース)`
 
 ### エラーハンドリングパターン
 - **400 Bad Request**: since_idが古い場合 → 自動リセット
@@ -28,9 +33,10 @@ description: X API and Discord integration patterns and limitations
 
 ## 状態管理
 ### since_id保存場所
-- **Cloud Run**: Secret Manager (`asai-x-bot-since-id`)
+- **Cloud Run**: Secret Manager (`{service-name}-since-id`)
 - **ローカル**: ファイル ([since_id.txt](mdc:since_id.txt))
 - **フォールバック**: Secret Manager失敗時は自動的にローカルファイル使用
+- **カスタムデプロイ**: サービス名ベースの独立したシークレット
 
 ### データフロー
 1. since_id読み込み → 7日制限チェック

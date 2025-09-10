@@ -8,7 +8,64 @@ set -e
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
 NC='\033[0m' # No Color
+
+# ヘルプメッセージ
+show_help() {
+    echo -e "${GREEN}ASAI X Bot Cloud Run デプロイメントスクリプト${NC}"
+    echo ""
+    echo "使用方法:"
+    echo "  $0 [オプション]"
+    echo ""
+    echo "オプション:"
+    echo "  -n, --name SERVICE_NAME    カスタムサービス名を指定 (デフォルト: asai-x-bot)"
+    echo "  -q, --query QUERY          カスタム検索クエリを指定"
+    echo "  -h, --help                 このヘルプメッセージを表示"
+    echo ""
+    echo "環境変数:"
+    echo "  PROJECT_ID                 GCPプロジェクトID (必須)"
+    echo "  REGION                     デプロイリージョン (デフォルト: asia-northeast1)"
+    echo ""
+    echo "例:"
+    echo "  # デフォルトのクエリでデプロイ"
+    echo "  $0"
+    echo ""
+    echo "  # カスタムクエリで別サービスとしてデプロイ"
+    echo "  $0 --name asai-x-bot-custom --query '(#浅井恋乃未) (from:custom_account)'"
+    echo ""
+    echo "  # 環境変数を使用"
+    echo "  export PROJECT_ID=my-project"
+    echo "  $0 --name asai-x-bot-news --query '(#浅井恋乃未) (news OR ニュース)'"
+    exit 0
+}
+
+# デフォルト値
+SERVICE_NAME="asai-x-bot"
+CUSTOM_QUERY=""
+DEFAULT_QUERY="(#浅井恋乃未) (from:sakurazaka46 OR from:sakura_joqr OR from:anan_mag OR from:Lemino_official)"
+
+# 引数解析
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        -n|--name)
+            SERVICE_NAME="$2"
+            shift 2
+            ;;
+        -q|--query)
+            CUSTOM_QUERY="$2"
+            shift 2
+            ;;
+        -h|--help)
+            show_help
+            ;;
+        *)
+            echo -e "${RED}エラー: 不明なオプション: $1${NC}"
+            echo "ヘルプを表示するには '$0 --help' を実行してください"
+            exit 1
+            ;;
+    esac
+done
 
 echo -e "${GREEN}=== ASAI X Bot Cloud Run デプロイメント ===${NC}"
 
@@ -24,12 +81,21 @@ if [ -z "$REGION" ]; then
     echo -e "${YELLOW}REGION が設定されていないため、デフォルトの asia-northeast1 を使用します${NC}"
 fi
 
-SERVICE_NAME="asai-x-bot"
+# クエリの決定
+if [ -n "$CUSTOM_QUERY" ]; then
+    QUERY="$CUSTOM_QUERY"
+    echo -e "${BLUE}カスタムクエリを使用します${NC}"
+else
+    QUERY="$DEFAULT_QUERY"
+    echo -e "${BLUE}デフォルトクエリを使用します${NC}"
+fi
+
 IMAGE_NAME="gcr.io/$PROJECT_ID/$SERVICE_NAME"
 
 echo -e "${GREEN}プロジェクト ID: $PROJECT_ID${NC}"
 echo -e "${GREEN}リージョン: $REGION${NC}"
 echo -e "${GREEN}サービス名: $SERVICE_NAME${NC}"
+echo -e "${GREEN}検索クエリ: $QUERY${NC}"
 
 # 1. gcloud の設定確認
 echo -e "\n${YELLOW}1. gcloud 設定の確認...${NC}"
@@ -67,32 +133,37 @@ docker push "$IMAGE_NAME"
 # 5. シークレットの作成（存在しない場合のみ）
 echo -e "\n${YELLOW}5. シークレットの確認/作成...${NC}"
 
+# サービス名ベースのシークレット名を生成
+X_BEARER_SECRET="${SERVICE_NAME}-x-bearer-token"
+DISCORD_WEBHOOK_SECRET="${SERVICE_NAME}-discord-webhook"
+SINCE_ID_SECRET="${SERVICE_NAME}-since-id"
+
 # X_BEARER_TOKEN シークレット
-if ! gcloud secrets describe asai-x-bot-x-bearer-token >/dev/null 2>&1; then
+if ! gcloud secrets describe "$X_BEARER_SECRET" >/dev/null 2>&1; then
     echo -e "${YELLOW}X_BEARER_TOKEN シークレットを作成してください:${NC}"
     echo "実際のトークンを入力してください:"
     read -rs x_token
-    echo "$x_token" | gcloud secrets create asai-x-bot-x-bearer-token --data-file=-
+    echo "$x_token" | gcloud secrets create "$X_BEARER_SECRET" --data-file=-
     echo -e "${GREEN}X_BEARER_TOKEN シークレットを作成しました${NC}"
 else
     echo -e "${GREEN}X_BEARER_TOKEN シークレットは既に存在します${NC}"
 fi
 
 # DISCORD_WEBHOOK_URL シークレット
-if ! gcloud secrets describe asai-x-bot-discord-webhook >/dev/null 2>&1; then
+if ! gcloud secrets describe "$DISCORD_WEBHOOK_SECRET" >/dev/null 2>&1; then
     echo -e "${YELLOW}DISCORD_WEBHOOK_URL シークレットを作成してください:${NC}"
     echo "Discord Webhook URLを入力してください:"
     read -r discord_url
-    echo "$discord_url" | gcloud secrets create asai-x-bot-discord-webhook --data-file=-
+    echo "$discord_url" | gcloud secrets create "$DISCORD_WEBHOOK_SECRET" --data-file=-
     echo -e "${GREEN}DISCORD_WEBHOOK_URL シークレットを作成しました${NC}"
 else
     echo -e "${GREEN}DISCORD_WEBHOOK_URL シークレットは既に存在します${NC}"
 fi
 
 # SINCE_ID シークレット（初期値は空文字）
-if ! gcloud secrets describe asai-x-bot-since-id >/dev/null 2>&1; then
+if ! gcloud secrets describe "$SINCE_ID_SECRET" >/dev/null 2>&1; then
     echo -e "${YELLOW}SINCE_ID シークレットを作成中...${NC}"
-    echo "" | gcloud secrets create asai-x-bot-since-id --data-file=-
+    echo "" | gcloud secrets create "$SINCE_ID_SECRET" --data-file=-
     echo -e "${GREEN}SINCE_ID シークレットを作成しました（初期値は空）${NC}"
 else
     echo -e "${GREEN}SINCE_ID シークレットは既に存在します${NC}"
@@ -121,11 +192,11 @@ gcloud run deploy "$SERVICE_NAME" \
     --timeout 900 \
     --concurrency 1 \
     --max-instances 1 \
-    --set-env-vars "QUERY=(#浅井恋乃未) (from:sakurazaka46 OR from:sakura_joqr OR from:anan_mag OR from:Lemino_official)" \
+    --set-env-vars "QUERY=$QUERY" \
     --set-env-vars "SINCE_ID_FILE=/tmp/data/since_id.txt" \
     --set-env-vars "GOOGLE_CLOUD_PROJECT=$PROJECT_ID" \
-    --set-secrets "X_BEARER_TOKEN=asai-x-bot-x-bearer-token:latest" \
-    --set-secrets "DISCORD_WEBHOOK_URL=asai-x-bot-discord-webhook:latest"
+    --set-secrets "X_BEARER_TOKEN=$X_BEARER_SECRET:latest" \
+    --set-secrets "DISCORD_WEBHOOK_URL=$DISCORD_WEBHOOK_SECRET:latest"
 
 echo -e "${GREEN}Cloud Runサービスのデプロイが完了しました${NC}"
 
@@ -136,13 +207,13 @@ echo -e "${GREEN}Cloud Run URL: $SERVICE_URL${NC}"
 
 # 8. Scheduler用Service Accountの作成とIAM設定
 echo -e "\n${YELLOW}8. Scheduler用Service Accountの設定...${NC}"
-SA_NAME="asai-x-bot-scheduler"
+SA_NAME="${SERVICE_NAME}-scheduler"
 SA_EMAIL="$SA_NAME@$PROJECT_ID.iam.gserviceaccount.com"
 
 # Service Accountが存在しない場合は作成
 if ! gcloud iam service-accounts describe "$SA_EMAIL" >/dev/null 2>&1; then
     gcloud iam service-accounts create "$SA_NAME" \
-        --display-name="ASAI X Bot Scheduler Service Account"
+        --display-name="$SERVICE_NAME Scheduler Service Account"
     echo -e "${GREEN}Scheduler用Service Accountを作成しました${NC}"
 else
     echo -e "${GREEN}Scheduler用Service Accountは既に存在します${NC}"
@@ -157,7 +228,7 @@ echo -e "${GREEN}Scheduler用Service AccountにCloud Run Invoker権限を付与�
 
 # 9. Cloud Schedulerジョブの作成
 echo -e "\n${YELLOW}9. Cloud Schedulerジョブの作成...${NC}"
-JOB_NAME="asai-x-bot-schedule"
+JOB_NAME="${SERVICE_NAME}-schedule"
 
 # 既存のジョブを削除（存在する場合）
 if gcloud scheduler jobs describe "$JOB_NAME" --location="$REGION" >/dev/null 2>&1; then
@@ -173,7 +244,7 @@ gcloud scheduler jobs create http "$JOB_NAME" \
     --uri="$SERVICE_URL" \
     --http-method=POST \
     --oidc-service-account-email="$SA_EMAIL" \
-    --description="ASAI X Bot - 1日1回の定期実行"
+    --description="$SERVICE_NAME - 1日1回の定期実行"
 
 echo -e "${GREEN}Cloud Schedulerジョブを作成しました${NC}"
 
@@ -189,8 +260,14 @@ echo -e "${YELLOW}デプロイされたサービス:${NC}"
 echo "  - Docker Image: $IMAGE_NAME (linux/amd64)"
 echo "  - Cloud Run Service: $SERVICE_NAME"
 echo "  - Region: $REGION"
+echo "  - Query: $QUERY"
 echo "  - Service Account: $PROJECT_NUMBER-compute@developer.gserviceaccount.com"
 echo "  - Scheduler Service Account: $SA_EMAIL"
+
+echo -e "\n${YELLOW}使用しているシークレット:${NC}"
+echo "  - X Bearer Token: $X_BEARER_SECRET"
+echo "  - Discord Webhook: $DISCORD_WEBHOOK_SECRET"
+echo "  - Since ID: $SINCE_ID_SECRET"
 
 echo -e "\n${YELLOW}=== トラブルシューティング ===${NC}"
 echo -e "${YELLOW}ログの確認:${NC}"

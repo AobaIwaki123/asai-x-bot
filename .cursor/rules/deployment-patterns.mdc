@@ -26,12 +26,22 @@ cd src && python run.py
 
 ### 自動デプロイ
 ```bash
+# デフォルトクエリでデプロイ
 ./deploy-cloud-run.sh
+
+# カスタムクエリで別サービスとしてデプロイ
+./deploy-cloud-run.sh --name asai-x-bot-news --query '(#浅井恋乃未) (news OR ニュース)'
 ```
 - Container Registry にプッシュ
 - Cloud Run サービス更新
 - 環境変数設定
 - Secret Manager権限設定
+
+### カスタムクエリデプロイ
+- **--name**: カスタムサービス名を指定
+- **--query**: カスタム検索クエリを指定
+- 独立したサービスとして動作
+- サービス名ベースの独自リソース管理（シークレット、スケジューラー）
 
 ### 環境判定ロジック
 ```python

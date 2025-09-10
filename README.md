@@ -330,6 +330,31 @@ export REGION="asia-northeast1"  # オプション（デフォルト値）
 4. Cloud Runサービスのデプロイ
 5. Cloud Schedulerによる1日1回の定期実行設定
 
+### カスタムクエリでのデプロイ
+
+デフォルト以外のクエリを使用する場合は、別サービスとしてデプロイできます：
+
+```bash
+# ヘルプを表示
+./deploy-cloud-run.sh --help
+
+# カスタムクエリで別サービスとしてデプロイ
+./deploy-cloud-run.sh \
+  --name asai-x-bot-news \
+  --query '(#浅井恋乃未) (news OR ニュース)'
+
+# 別のアカウントを監視する場合
+./deploy-cloud-run.sh \
+  --name asai-x-bot-custom \
+  --query '(#浅井恋乃未) (from:custom_account OR from:another_account)'
+```
+
+カスタムデプロイの特徴：
+- 独立したCloud Runサービスとして動作
+- サービス名ベースの独自のシークレット管理
+- 個別のCloud Schedulerジョブ
+- 並行して複数のボットを運用可能
+
 ### 手動デプロイ
 
 #### 1. Dockerイメージの準備
