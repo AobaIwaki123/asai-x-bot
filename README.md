@@ -67,10 +67,12 @@ sequenceDiagram
 
 - `#浅井恋乃未` ハッシュタグが含まれる投稿
 - 以下のアカウントからの投稿：
-  - `@sakurazaka46` (櫻坂46公式)
-  - `@sakura_joqr` (JOQR)
+  - `@sakurazaka46` (櫻坂46)
+  - `@sakura_joqr` (櫻坂46の「さ」)
   - `@anan_mag` (anan編集部)
-  - `@Lemino_official` (Lemino公式)
+  - `@Lemino_official` (Lemino)
+  - `@BLTTV` (B.L.T.編集部)
+  - `@shonen_sunday` (週刊少年サンデー)
 
 ## 必要環境
 

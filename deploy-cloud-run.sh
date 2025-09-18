@@ -121,7 +121,7 @@ gcloud run deploy "$SERVICE_NAME" \
     --timeout 900 \
     --concurrency 1 \
     --max-instances 1 \
-    --set-env-vars "QUERY=(#浅井恋乃未) (from:sakurazaka46 OR from:sakura_joqr OR from:anan_mag OR from:Lemino_official)" \
+    --set-env-vars "QUERY=(#浅井恋乃未) (from:sakurazaka46 OR from:sakura_joqr OR from:anan_mag OR from:Lemino_official OR from:BLTTV OR from:shonen_sunday)" \
     --set-env-vars "SINCE_ID_FILE=/tmp/data/since_id.txt" \
     --set-env-vars "GOOGLE_CLOUD_PROJECT=$PROJECT_ID" \
     --set-secrets "X_BEARER_TOKEN=asai-x-bot-x-bearer-token:latest" \
