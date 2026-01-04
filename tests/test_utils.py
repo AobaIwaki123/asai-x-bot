@@ -120,9 +120,11 @@ class TestUtils:
             patch("src.utils.PROJECT_ID", "test-project"),
             patch("src.utils.FIRESTORE_COLLECTION", "bot_state"),
             patch("src.utils.FIRESTORE_DOC_ID", "twitter_polling"),
+            patch("src.utils.FIRESTORE_DB_NAME", "test-db"),
         ):
             result = _load_since_id_from_firestore()
             assert result == "firestore_id_123"
+            mock_client_class.assert_called_with(project="test-project", database="test-db")
 
     @patch("src.utils.firestore.Client")
     def test_load_since_id_from_firestore_exception(self, mock_client_class):
@@ -133,9 +135,11 @@ class TestUtils:
 
         with (
             patch("src.utils.PROJECT_ID", "test-project"),
+            patch("src.utils.FIRESTORE_DB_NAME", "test-db"),
         ):
             result = _load_since_id_from_firestore()
             assert result is None
+            mock_client_class.assert_called_with(project="test-project", database="test-db")
 
     @patch("src.utils.firestore.Client")
     def test_save_since_id_to_firestore_success(self, mock_client_class):
@@ -150,9 +154,11 @@ class TestUtils:
             patch("src.utils.PROJECT_ID", "test-project"),
             patch("src.utils.FIRESTORE_COLLECTION", "bot_state"),
             patch("src.utils.FIRESTORE_DOC_ID", "twitter_polling"),
+            patch("src.utils.FIRESTORE_DB_NAME", "test-db"),
         ):
             _save_since_id_to_firestore("new_id_456")
 
+            mock_client_class.assert_called_with(project="test-project", database="test-db")
             mock_doc_ref.set.assert_called_once_with(
                 {"since_id": "new_id_456"}, merge=True
             )

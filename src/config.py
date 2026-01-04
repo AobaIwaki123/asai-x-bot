@@ -43,6 +43,7 @@ SEARCH_URL = "https://api.x.com/2/tweets/search/recent"
 PROJECT_ID = os.getenv("GOOGLE_CLOUD_PROJECT", os.getenv("GCP_PROJECT"))
 FIRESTORE_COLLECTION = "bot_state"
 FIRESTORE_DOC_ID = "twitter_polling"
+FIRESTORE_DB_NAME = os.getenv("FIRESTORE_DB_NAME", "asai")
 
 
 # X API用のヘッダーとパラメータ

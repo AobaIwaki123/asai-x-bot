@@ -316,6 +316,7 @@ gcloud version
 gcloud auth login
 export PROJECT_ID="your-gcp-project-id"
 export REGION="asia-northeast1"  # オプション（デフォルト値）
+export FIRESTORE_DB_NAME="your-firestore-db-name"
 
 # 3. 自動デプロイ実行
 ./deploy-cloud-run.sh

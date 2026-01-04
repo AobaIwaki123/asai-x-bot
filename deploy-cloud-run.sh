@@ -123,6 +123,7 @@ gcloud run deploy "$SERVICE_NAME" \
     --set-env-vars "QUERY=(#浅井恋乃未) (from:sakurazaka46 OR from:sakura_joqr OR from:anan_mag OR from:Lemino_official OR from:BLTTV OR from:shonen_sunday)" \
     --set-env-vars "SINCE_ID_FILE=/tmp/data/since_id.txt" \
     --set-env-vars "GOOGLE_CLOUD_PROJECT=$PROJECT_ID" \
+    --set-env-vars "FIRESTORE_DB_NAME=asai" \
     --set-secrets "X_BEARER_TOKEN=asai-x-bot-x-bearer-token:latest" \
     --set-secrets "DISCORD_WEBHOOK_URL=asai-x-bot-discord-webhook:latest"
 

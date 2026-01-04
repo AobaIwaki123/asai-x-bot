@@ -7,10 +7,12 @@ from google.cloud import firestore
 
 from config import (
     FIRESTORE_COLLECTION,
+    FIRESTORE_DB_NAME,
     FIRESTORE_DOC_ID,
     PROJECT_ID,
     STATE_FILE,
 )
+
 
 logger = logging.getLogger(__name__)
 
@@ -55,7 +57,7 @@ def is_since_id_valid(since_id: str) -> bool:
 
 def _get_firestore_client():
     """Firestore クライアントを取得"""
-    return firestore.Client(project=PROJECT_ID)
+    return firestore.Client(project=PROJECT_ID, database=FIRESTORE_DB_NAME)
 
 
 def _load_since_id_from_firestore():
