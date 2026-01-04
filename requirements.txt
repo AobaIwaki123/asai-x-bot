@@ -1,6 +1,6 @@
 python-dotenv
 requests
-google-cloud-secret-manager
+google-cloud-firestore
 
 # Development and testing dependencies
 pytest>=7.0.0
