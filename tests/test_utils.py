@@ -9,7 +9,6 @@ if "src" not in sys.path:
 
 from src.utils import (  # noqa: E402
     _load_since_id_from_file,
-    _load_since_id_from_file,
     _load_since_id_from_firestore,
     _save_since_id_to_file,
     _save_since_id_to_firestore,
@@ -159,9 +158,7 @@ class TestUtils:
             _save_since_id_to_firestore("new_id_456")
 
             mock_client_class.assert_called_with(project="test-project", database="test-db")
-            mock_doc_ref.set.assert_called_once_with(
-                {"since_id": "new_id_456"}, merge=True
-            )
+            mock_doc_ref.set.assert_called_once_with({"since_id": "new_id_456"}, merge=True)
 
     def test_load_since_id_cloud_run_environment(self):
         """Cloud Run環境でのsince_id読み込みテスト"""

@@ -2,7 +2,6 @@ import datetime
 import logging
 import os
 
-from google.api_core import exceptions as gcp_exceptions
 from google.cloud import firestore
 
 from config import (
@@ -12,7 +11,6 @@ from config import (
     PROJECT_ID,
     STATE_FILE,
 )
-
 
 logger = logging.getLogger(__name__)
 
