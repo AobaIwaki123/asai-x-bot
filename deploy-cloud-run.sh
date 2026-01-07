@@ -89,14 +89,7 @@ else
     echo -e "${GREEN}DISCORD_WEBHOOK_URL シークレットは既に存在します${NC}"
 fi
 
-# SINCE_ID シークレット（初期値は空文字）
-if ! gcloud secrets describe asai-x-bot-since-id >/dev/null 2>&1; then
-    echo -e "${YELLOW}SINCE_ID シークレットを作成中...${NC}"
-    echo "" | gcloud secrets create asai-x-bot-since-id --data-file=-
-    echo -e "${GREEN}SINCE_ID シークレットを作成しました（初期値は空）${NC}"
-else
-    echo -e "${GREEN}SINCE_ID シークレットは既に存在します${NC}"
-fi
+
 
 # 5.5. Cloud Runサービスアカウントの権限設定（プロジェクト番号を使用）
 echo -e "\n${YELLOW}5.5. Cloud Runサービスアカウントの権限設定...${NC}"
@@ -107,6 +100,12 @@ echo -e "${YELLOW}プロジェクト番号: $PROJECT_NUMBER${NC}"
 gcloud projects add-iam-policy-binding "$PROJECT_ID" \
     --member="serviceAccount:$PROJECT_NUMBER-compute@developer.gserviceaccount.com" \
     --role="roles/secretmanager.secretAccessor"
+
+# Firestore User権限を付与
+gcloud projects add-iam-policy-binding "$PROJECT_ID" \
+    --member="serviceAccount:$PROJECT_NUMBER-compute@developer.gserviceaccount.com" \
+    --role="roles/datastore.user"
+
 echo -e "${GREEN}Cloud Runサービスアカウントに権限を付与しました${NC}"
 
 # 6. Cloud Run サービスのデプロイ
@@ -124,6 +123,7 @@ gcloud run deploy "$SERVICE_NAME" \
     --set-env-vars "QUERY=(#浅井恋乃未) (from:sakurazaka46 OR from:sakura_joqr OR from:anan_mag OR from:Lemino_official OR from:BLTTV OR from:shonen_sunday)" \
     --set-env-vars "SINCE_ID_FILE=/tmp/data/since_id.txt" \
     --set-env-vars "GOOGLE_CLOUD_PROJECT=$PROJECT_ID" \
+    --set-env-vars "FIRESTORE_DB_NAME=asai" \
     --set-secrets "X_BEARER_TOKEN=asai-x-bot-x-bearer-token:latest" \
     --set-secrets "DISCORD_WEBHOOK_URL=asai-x-bot-discord-webhook:latest"
 

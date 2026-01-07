@@ -9,9 +9,9 @@ if "src" not in sys.path:
 
 from src.utils import (  # noqa: E402
     _load_since_id_from_file,
-    _load_since_id_from_secret_manager,
+    _load_since_id_from_firestore,
     _save_since_id_to_file,
-    _save_since_id_to_secret_manager,
+    _save_since_id_to_firestore,
     build_index,
     load_since_id,
     save_since_id,
@@ -101,61 +101,64 @@ class TestUtils:
         finally:
             os.unlink(tmp_path)
 
-    @patch("src.utils.secretmanager.SecretManagerServiceClient")
-    def test_load_since_id_from_secret_manager_success(self, mock_client_class):
-        """Secret Managerからの正常な読み込みテスト"""
+    @patch("src.utils.firestore.Client")
+    def test_load_since_id_from_firestore_success(self, mock_client_class):
+        """Firestoreからの正常な読み込みテスト"""
         mock_client = MagicMock()
         mock_client_class.return_value = mock_client
 
-        mock_response = MagicMock()
-        mock_response.payload.data.decode.return_value = "secret_id_123"
-        mock_client.access_secret_version.return_value = mock_response
+        mock_doc = MagicMock()
+        mock_doc.exists = True
+        mock_doc.to_dict.return_value = {"since_id": "firestore_id_123"}
+
+        mock_doc_ref = MagicMock()
+        mock_doc_ref.get.return_value = mock_doc
+        mock_client.collection.return_value.document.return_value = mock_doc_ref
 
         with (
             patch("src.utils.PROJECT_ID", "test-project"),
-            patch("src.utils.SINCE_ID_SECRET_NAME", "test-secret"),
+            patch("src.utils.FIRESTORE_COLLECTION", "bot_state"),
+            patch("src.utils.FIRESTORE_DOC_ID", "twitter_polling"),
+            patch("src.utils.FIRESTORE_DB_NAME", "test-db"),
         ):
-            result = _load_since_id_from_secret_manager()
-            assert result == "secret_id_123"
+            result = _load_since_id_from_firestore()
+            assert result == "firestore_id_123"
+            mock_client_class.assert_called_with(project="test-project", database="test-db")
 
-    @patch("src.utils.secretmanager.SecretManagerServiceClient")
-    def test_load_since_id_from_secret_manager_exception(self, mock_client_class):
-        """Secret Managerからの読み込み失敗テスト"""
+    @patch("src.utils.firestore.Client")
+    def test_load_since_id_from_firestore_exception(self, mock_client_class):
+        """Firestoreからの読み込み失敗テスト"""
         mock_client = MagicMock()
         mock_client_class.return_value = mock_client
-        mock_client.access_secret_version.side_effect = Exception("API Error")
+        mock_client.collection.side_effect = Exception("Firestore Error")
 
         with (
             patch("src.utils.PROJECT_ID", "test-project"),
-            patch("src.utils.SINCE_ID_SECRET_NAME", "test-secret"),
+            patch("src.utils.FIRESTORE_DB_NAME", "test-db"),
         ):
-            result = _load_since_id_from_secret_manager()
+            result = _load_since_id_from_firestore()
             assert result is None
+            mock_client_class.assert_called_with(project="test-project", database="test-db")
 
-    @patch("src.utils.secretmanager.SecretManagerServiceClient")
-    def test_save_since_id_to_secret_manager_new_secret(self, mock_client_class):
-        """新しいシークレット作成時の保存テスト"""
+    @patch("src.utils.firestore.Client")
+    def test_save_since_id_to_firestore_success(self, mock_client_class):
+        """Firestoreへの正常な保存テスト"""
         mock_client = MagicMock()
         mock_client_class.return_value = mock_client
 
-        # シークレットが存在しない（NotFound例外）
-        from google.api_core import exceptions as gcp_exceptions
-
-        mock_client.get_secret.side_effect = gcp_exceptions.NotFound("Secret not found")
-
-        mock_response = MagicMock()
-        mock_response.name = "projects/test-project/secrets/test-secret/versions/1"
-        mock_client.add_secret_version.return_value = mock_response
+        mock_doc_ref = MagicMock()
+        mock_client.collection.return_value.document.return_value = mock_doc_ref
 
         with (
             patch("src.utils.PROJECT_ID", "test-project"),
-            patch("src.utils.SINCE_ID_SECRET_NAME", "test-secret"),
+            patch("src.utils.FIRESTORE_COLLECTION", "bot_state"),
+            patch("src.utils.FIRESTORE_DOC_ID", "twitter_polling"),
+            patch("src.utils.FIRESTORE_DB_NAME", "test-db"),
         ):
-            _save_since_id_to_secret_manager("new_id_456")
+            _save_since_id_to_firestore("new_id_456")
 
-            # シークレット作成が呼ばれることを確認
-            mock_client.create_secret.assert_called_once()
-            mock_client.add_secret_version.assert_called_once()
+            mock_client_class.assert_called_with(project="test-project", database="test-db")
+            mock_doc_ref.set.assert_called_once_with({"since_id": "new_id_456"}, merge=True)
 
     def test_load_since_id_cloud_run_environment(self):
         """Cloud Run環境でのsince_id読み込みテスト"""
@@ -163,7 +166,7 @@ class TestUtils:
             patch("src.utils.PROJECT_ID", "test-project"),
             patch.dict(os.environ, {"K_SERVICE": "test-service"}),
             patch(
-                "src.utils._load_since_id_from_secret_manager",
+                "src.utils._load_since_id_from_firestore",
                 return_value="cloud_id",
             ),
             patch("src.utils._load_since_id_from_file", return_value="file_id"),
@@ -187,7 +190,7 @@ class TestUtils:
         with (
             patch("src.utils.PROJECT_ID", "test-project"),
             patch.dict(os.environ, {"K_SERVICE": "test-service"}),
-            patch("src.utils._save_since_id_to_secret_manager") as mock_secret_save,
+            patch("src.utils._save_since_id_to_firestore") as mock_secret_save,
             patch("src.utils._save_since_id_to_file") as mock_file_save,
         ):
             save_since_id("test_id")
@@ -209,7 +212,7 @@ class TestUtils:
             patch("src.utils.PROJECT_ID", "test-project"),
             patch.dict(os.environ, {"K_SERVICE": "test-service"}),
             patch(
-                "src.utils._load_since_id_from_secret_manager",
+                "src.utils._load_since_id_from_firestore",
                 return_value="invalid_id",
             ),
             patch("src.utils.is_since_id_valid", return_value=False),
